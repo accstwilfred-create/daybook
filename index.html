@@ -1,0 +1,326 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Daybook Dashboard (Wilfred)</title><style>:root{--color-fg:#1d2433;--color-fg-muted:#5b6475;--color-bg:#f6f7f9;--color-panel:#ffffff;--color-border-line:#e1e4ea;--color-ok:#1f7a4d;--color-warn:#9a6700;--color-bad:#b42318;
+--font-anthropic-sans:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--font-anthropic-serif:Georgia,"Times New Roman",serif;
+--cds-font-size-caption:12px;--cds-font-size-body:14px;--cds-font-size-heading:16px;--cds-font-size-title:26px;--cds-font-weight-medium:600;
+--cds-gap-xs:4px;--cds-gap-sm:8px;--cds-gap-md:14px;--cds-gap-lg:22px;--cds-pad-xs:4px;--cds-pad-sm:8px;--cds-pad-md:12px;--cds-pad-lg:16px;--cds-radius:10px;
+--cds-chart-grid:#eceef2;--cds-chart-muted:#c3c8d2;--cds-surface-popover:#fff;--cds-border:#d5d9e0;--cds-shadow-popover:0 4px 14px rgba(0,0,0,.12);--cds-text-secondary:#5b6475;
+--s1:#2f6fb3;--s2:#2a9d8f;--s3:#c77d2e;--s4:#8d6bb8}
+@media (prefers-color-scheme:dark){:root{--color-fg:#e7eaf0;--color-fg-muted:#a3abba;--color-bg:#13161c;--color-panel:#1c2029;--color-border-line:#2c323e;--color-ok:#5ccf93;--color-warn:#e3b341;--color-bad:#f27a6e;
+--cds-chart-grid:#272c36;--cds-chart-muted:#4a5160;--cds-surface-popover:#232833;--cds-border:#3a4150;--cds-text-secondary:#a3abba;--s1:#6aa6e8;--s2:#4fc4b5;--s3:#e0a25a;--s4:#b394e0;color-scheme:dark}}
+body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(--font-anthropic-sans);font-size:14px}
+#dash-root{max-width:1200px;margin:0 auto;padding:16px}
+.dash-skeleton{color:transparent;background:var(--color-border-line);border-radius:6px}
+.asof{font-size:12px;color:var(--color-fg-muted);margin:0 0 10px}</style><script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script><script>document.write('<script src="data.js?t='+Date.now()+'"><\/script>')</script><script>window.dash=(function(){const calcs={},subs=[];
+ function data(id){if(DATA[id])return {status:'ok',data:DATA[id],columns:Object.keys(DATA[id][0]||{})};if(calcs[id]){const c=calcs[id];return {status:'ok',data:c.fn(...c.inputs.map(i=>data(i).data))}}return {status:'missing',data:[]}}
+ return {data,calc:(id,o)=>{calcs[id]=o},onData:fn=>{subs.push(fn);fn();let t;window.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(fn,150)})},
+  colors:['var(--s1)','var(--s2)','var(--s3)','var(--s4)','#888','#888','#888','#888'],refresh:()=>{},params:()=>({}),setParams:()=>{},resetParams:()=>{},setLink:()=>{}}})();</script></head>
+<body><div id="dash-root"><p class="asof">St. Wilfred's Education Society · Fee Department · Data as of 8 Oct 2026 (ScholarsERP Day Book, all branches)</p>
+<style>
+.db{font-family:var(--font-anthropic-sans);display:flex;flex-direction:column;gap:var(--cds-gap-lg);font-variant-numeric:tabular-nums}
+.db h1{font-family:var(--font-anthropic-serif);font-weight:400;font-size:var(--cds-font-size-title);margin:0;text-wrap:balance}
+.db .take{color:var(--color-fg-muted);margin:4px 0 0;max-width:70ch}
+.db .pick{position:sticky;top:0;z-index:5;background:var(--color-bg);padding-block:8px;display:flex;flex-direction:column;gap:6px}
+.db .pick-lab{font-size:var(--cds-font-size-caption);font-weight:600;color:var(--color-fg-muted);letter-spacing:.04em;text-transform:uppercase}
+.db .seg{display:flex;gap:8px;flex-wrap:wrap}
+.db .seg button{font:inherit;font-weight:600;flex:1 1 0;padding:10px 14px;border-radius:14px;border:2px solid var(--color-fg);background:var(--color-panel);color:var(--color-fg);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12);transition:transform .15s}
+.db .seg button b{display:block;font-weight:700}
+.db .seg button small{display:block;font-size:var(--cds-font-size-caption);font-weight:400;opacity:.8}
+.db .seg button[aria-pressed=true]{background:var(--color-fg);color:var(--color-bg)}
+.db .seg button:active{transform:scale(.96)}
+.db .seg button:focus-visible{outline:3px solid var(--color-fg-muted);outline-offset:2px}
+@media (prefers-reduced-motion:no-preference){.db .seg.hint button[aria-pressed=false]{animation:dbpulse 1.6s ease-out infinite}}
+@keyframes dbpulse{0%{box-shadow:0 0 0 0 rgba(47,111,179,.55)}70%{box-shadow:0 0 0 10px rgba(47,111,179,0)}100%{box-shadow:0 2px 6px rgba(0,0,0,.12)}}
+.db .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));gap:var(--cds-gap-md)}
+.db .tile{background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:var(--cds-radius);padding:var(--cds-pad-md);display:flex;flex-direction:column;gap:4px;min-width:0}
+.db .tile .lab{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
+.db .tile .big{font-family:var(--font-anthropic-serif);font-size:var(--cds-font-size-title);font-weight:400;line-height:1.15;overflow-wrap:anywhere}
+.db .tile .sub{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
+.db .tile.alert .big{color:var(--color-bad)}
+.db .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));gap:var(--cds-gap-md)}
+.db .card{background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:var(--cds-radius);padding:var(--cds-pad-lg);min-width:0;display:flex;flex-direction:column;gap:var(--cds-gap-sm)}
+.db .card h2{font-size:var(--cds-font-size-heading);font-weight:var(--cds-font-weight-medium);margin:0}
+.db .note{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);margin:0}
+.db .chart{position:relative;min-height:240px}
+.db .tip{position:absolute;background:var(--cds-surface-popover);border:1px solid var(--cds-border);border-radius:var(--cds-radius);box-shadow:var(--cds-shadow-popover);padding:var(--cds-pad-xs) var(--cds-pad-sm);font-size:var(--cds-font-size-caption);pointer-events:none;white-space:nowrap;z-index:2}
+.db .tip .d{color:var(--cds-text-secondary)}
+.db .sw{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.db .legend{display:flex;flex-wrap:wrap;gap:var(--cds-gap-md);font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
+.db .tw{max-height:460px;overflow:auto}
+.db table{width:100%;border-collapse:collapse;font-size:var(--cds-font-size-caption)}
+.db th{position:sticky;top:0;background:var(--color-panel);text-align:left;font-weight:600;padding:6px 8px;border-bottom:1px solid var(--color-border-line);white-space:nowrap}
+.db th button{all:unset;cursor:pointer}
+.db td{padding:6px 8px;border-bottom:1px solid var(--color-border-line);vertical-align:top}
+.db td.n,.db th.n{text-align:right}
+.db .bar{height:6px;border-radius:3px;background:var(--cds-chart-muted);margin-top:3px}
+.db .pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:var(--cds-font-size-caption);border:1px solid currentColor}
+.db .p-High{color:var(--color-bad)}.db .p-Medium{color:var(--color-warn)}.db .p-Low{color:var(--color-fg-muted)}
+.db .tools{display:flex;flex-wrap:wrap;gap:var(--cds-gap-sm);align-items:center}
+.db select,.db input{font:inherit;padding:4px 8px;border:1px solid var(--color-border-line);border-radius:var(--cds-radius);background:var(--color-bg);color:var(--color-fg)}
+.db .sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:var(--cds-gap-sm)}
+.db .sum div{border:1px solid var(--color-border-line);border-radius:var(--cds-radius);padding:var(--cds-pad-sm)}
+.db .sum b{display:block;font-size:var(--cds-font-size-heading)}
+.db [data-dash-source-state=refreshing]{opacity:.5}
+.db [data-dash-source-state=empty]{color:transparent}
+@media (max-width:600px){
+ .db #branches th:nth-child(3),.db #branches td:nth-child(3),.db #branches th:nth-child(9),.db #branches td:nth-child(9){display:none}
+ .db .tiles{grid-template-columns:1fr 1fr;gap:var(--cds-gap-sm)}
+ .db .tile .big{font-size:20px}
+ .db .tile{padding:var(--cds-pad-sm)}
+ .db .seg{flex-wrap:wrap;gap:6px}
+ .db .seg button{flex:1 1 30%;padding:8px 4px;border-radius:14px}
+ .db .card{padding:var(--cds-pad-md)}
+ .db #branches td:first-child,.db #branches th:first-child{position:sticky;left:0;background:var(--color-panel);z-index:1;min-width:9rem}
+ .db #branches th:first-child{z-index:2}
+}
+</style>
+<div class="db">
+  <header>
+    <h1 id="top">Daybook Dashboard (Wilfred)</h1>
+    <p class="take" id="take" data-source="kpi">—</p>
+  </header>
+  <div class="pick"><span class="pick-lab">Tap to change period</span><div class="seg hint" role="group" aria-label="Period">
+    <button type="button" data-p="Yesterday" aria-pressed="true"><b>Yesterday</b><small>8 Oct</small></button>
+    <button type="button" data-p="Last 7 days" aria-pressed="false"><b>Last 7 days</b><small>2–8 Oct</small></button>
+    <button type="button" data-p="Past 30 days" aria-pressed="false"><b>Past 30 days</b><small>9 Sep–8 Oct</small></button>
+    <button type="button" data-p="This FY" aria-pressed="false"><b>This FY</b><small>2026-27 till 8 Oct</small></button>
+    <button type="button" data-p="Last FY" aria-pressed="false"><b>Last FY</b><small>2025-26</small></button>
+  </div></div>
+  <section class="tiles" id="tiles">
+    <div class="tile"><span class="lab">Total collection</span><span class="big dash-skeleton" data-source="kpi" data-field="total">—</span><span class="sub"><span data-source="kpi" data-field="receipts">—</span> receipts</span></div>
+    <div class="tile"><span class="lab">Average per day</span><span class="big dash-skeleton" data-source="kpi" data-field="avg_per_day">—</span><span class="sub">over <span data-source="kpi" data-field="days">—</span> day(s)</span></div>
+    <div class="tile"><span class="lab">Cash</span><span class="big dash-skeleton" data-source="kpi" data-field="cash">—</span><span class="sub"><span data-source="kpi" data-field="cash_share">—</span> of total</span></div>
+    <div class="tile"><span class="lab">Online / NEFT</span><span class="big dash-skeleton" data-source="kpi" data-field="online">—</span><span class="sub">Self-paid online: <span data-source="kpi" data-field="self_paid_online">—</span></span></div>
+    <div class="tile"><span class="lab">Scholarship</span><span class="big dash-skeleton" data-source="kpi" data-field="scholarship">—</span><span class="sub">Gray Quest: <span data-source="kpi" data-field="gray_quest">—</span></span></div>
+  </section>
+
+  <section class="card" id="branch-card">
+    <h2>Branch-wise collection report</h2>
+    <p class="note" id="bnote">For the period picked above. Others = Gray Quest + Cheque/DD. The last column compares yesterday / last 7 days with the branch's 30-day daily average, and This FY with the same dates last FY (1 Apr – 8 Oct 2025).</p>
+    <div class="tools"><label>Location <select id="f-loc"><option value="">All</option></select></label></div>
+    <div class="tw" style="max-height:560px">
+      <table id="branches" data-source="branches" data-row-key="branch">
+        <thead><tr>
+          <th data-field="branch">Branch</th><th class="n bc" data-k="total" data-field="y_total">Total</th><th data-field="location">Location</th>
+          <th class="n bc" data-k="receipts" data-field="y_receipts">Receipts</th>
+          <th class="n bc" data-k="cash" data-field="y_cash">Cash</th>
+          <th class="n bc" data-k="online" data-field="y_online">Online</th>
+          <th class="n bc" data-k="scholarship" data-field="y_scholarship">Scholarship</th>
+          <th class="n bc" data-k="others" data-field="y_others">Others</th>
+          <th class="n" data-field="avg_day_30">Avg/day (30 days)</th>
+          <th class="n" data-source="bvs" data-field="vs_avg">vs 30-day avg</th>
+        </tr></thead><tbody></tbody>
+      </table>
+    </div>
+    <h2 style="margin-top:var(--cds-gap-md)">Location totals</h2>
+    <div class="tw"><table id="locs" data-source="loctot" data-row-key="location">
+      <thead><tr><th data-field="location">Location</th><th class="n" data-field="yesterday">Yesterday</th><th class="n" data-field="last_7_days">Last 7 days</th><th class="n" data-field="past_30_days">Past 30 days</th><th class="n" data-field="this_fy">This FY</th><th class="n" data-field="last_fy">Last FY</th></tr></thead><tbody></tbody>
+    </table></div>
+  </section>
+
+  <div class="grid">
+    <section class="card" id="daily-card">
+      <h2>Collection by day</h2>
+      <p class="note">9 Sep – 8 Oct. Sundays and the 2 Oct holiday are shaded.</p>
+      <div class="legend" id="leg"></div>
+      <div class="chart" id="daily" data-source="daily"></div>
+    </section>
+    <section class="card" id="month-card">
+      <h2>Collection by month</h2>
+      <p class="note">Apr 2025 – Oct 2026 (Oct up to 8th). FY 2025-26 and FY 2026-27.</p>
+      <div class="legend" id="leg2"></div>
+      <div class="chart" id="monthly" data-source="monthly"></div>
+    </section>
+    <section class="card" id="mode-card">
+      <h2>Mode of payment</h2>
+      <p class="note" id="mode-note">For the period picked above.</p>
+      <div class="chart" id="modes" data-source="modes" style="min-height:220px"></div>
+    </section>
+  </div>
+
+  <section class="card" id="user-card">
+    <h2>User-wise entries</h2>
+    <p class="note">"Online (self-paid by student)" means no user — paid through the payment gateway.</p>
+    <div class="tw">
+      <table id="users" data-source="users" data-row-key="user">
+        <thead><tr>
+          <th data-field="user">User</th>
+          <th class="n" data-field="receipts_yesterday">Receipts 8 Oct</th>
+          <th class="n" data-field="receipts_7_days">Receipts 7 days</th>
+          <th class="n" data-field="amount_7_days">Amount 7 days</th>
+          <th class="n" data-field="receipts_30_days">Receipts 30 days</th>
+          <th class="n" data-field="amount_30_days">Amount 30 days</th>
+          <th class="n" data-field="cash_30_days">Cash 30 days</th>
+        </tr></thead><tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  
+</div>
+<script>
+(function(){
+const INR=v=>'₹'+Math.round(+v||0).toLocaleString('en-IN');
+const NUM=v=>Math.round(+v||0).toLocaleString('en-IN');
+const PCT=v=>((+v||0)*100).toFixed(1)+'%';
+window.DBP=window.DBP||{p:'Yesterday'};
+const PCOL={'Yesterday':'yesterday','Last 7 days':'last_7_days','Past 30 days':'past_30_days','This FY':'this_fy','Last FY':'last_fy'};
+const EPER={'Yesterday':['Yesterday'],'Last 7 days':['Yesterday','Last 7 days'],'Past 30 days':['Yesterday','Last 7 days','Past 30 days']};
+
+const PK={'Yesterday':'y','Last 7 days':'w','Past 30 days':'m','This FY':'f','Last FY':'p'};
+dash.calc('bvs',{inputs:['branches'],title:'Branch growth / vs average',description:'Yesterday and last-7-days daily average vs the branch 30-day daily average; this FY vs the same dates last FY.',
+ fn:(branches)=>branches.map(b=>({branch:b.branch,vs_avg:+b.avg_day_30?(+b.y_total)/(+b.avg_day_30)-1:0,vs_avg_7:+b.avg_day_30?(+b.w_total/7)/(+b.avg_day_30)-1:0,vs_ly:+b.ly_total?(+b.f_total)/(+b.ly_total)-1:null}))});
+dash.calc('loctot',{inputs:['branches'],title:'Location totals',description:'Branch totals added up by location for each period.',
+ fn:(branches)=>{const m={};branches.forEach(b=>{const r=m[b.location]=m[b.location]||{location:b.location,yesterday:0,last_7_days:0,past_30_days:0,this_fy:0,last_fy:0};r.yesterday+=+b.y_total;r.last_7_days+=+b.w_total;r.past_30_days+=+b.m_total;r.this_fy+=+b.f_total;r.last_fy+=+b.p_total});const all=Object.values(m);const t=all.reduce((a,r)=>a+r.past_30_days,0);all.forEach(r=>r.share_30=t?r.past_30_days/t:0);return all.sort((a,b)=>b.past_30_days-a.past_30_days)}});
+document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
+  DBP.p=b.dataset.p; b.parentElement.classList.remove('hint'); document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  draw();
+}));
+['f-loc'].forEach(id=>document.getElementById(id).addEventListener('change',()=>draw()));
+
+function failed(el,st){el.classList.remove('dash-skeleton');if(st==='error'||st==='connect'){el.textContent='';const s=document.createElement('span');s.style.cssText='display:flex;align-items:center;justify-content:center;gap:6px;min-height:inherit;color:var(--color-fg-muted);font-size:var(--cds-font-size-caption)';const dot=document.createElement('i');dot.style.cssText='width:.375rem;height:.375rem;border-radius:50%;background:var(--color-bad)';s.append(dot,'Failed to load');el.append(s)}}
+
+function draw(){
+  const P=DBP.p;
+  // KPI
+  const k=dash.data('kpi');
+  document.querySelectorAll('[data-source="kpi"][data-field]').forEach(el=>{
+    el.setAttribute('data-where','period='+encodeURIComponent(P));
+    if(k.status!=='ok'){if(k.status!=='loading')failed(el,k.status);return}
+    el.classList.remove('dash-skeleton');
+    const r=k.data.find(x=>x.period===P); if(!r){el.textContent='—';return}
+    const f=el.dataset.field, v=r[f];
+    el.textContent= (v===''||v==null)?'—': f==='cash_share'?PCT(v): ['receipts','days','exceptions','cancelled'].includes(f)?NUM(v): f==='cancelled_amount'?NUM(v): INR(v);
+  });
+  const take=document.getElementById('take');
+  if(k.status==='ok'){
+    const fy=k.data.find(x=>x.period==='This FY'),y=k.data.find(x=>x.period==='Yesterday'),w=k.data.find(x=>x.period==='Last 7 days'),m=k.data.find(x=>x.period==='Past 30 days');
+    const vs=(+y.total/+m.avg_per_day);
+    take.textContent=`Yesterday's collection of ${INR(y.total)} was ${vs.toFixed(1)}× the 30-day daily average (${INR(m.avg_per_day)}). The last 7 days brought in ${INR(w.total)}, ${PCT(w.total/m.total)} of the past 30 days.${fy?` This FY so far: ${INR(fy.total)}, ${(fy.total/fy.same_period_last_year-1>=0?'up ':'down ')+PCT(Math.abs(fy.total/fy.same_period_last_year-1))} on the same period last year.`:''} Cash was ${PCT(y.cash_share)} of yesterday's collection.`;
+  } else take.textContent='—';
+
+  drawDaily(); drawMonthly(); drawModes(P); drawBranches(P); drawUsers();
+}
+
+function drawMonthly(){
+  const el=document.getElementById('monthly'); const d=dash.data('monthly'); el.innerHTML='';
+  const lg=document.getElementById('leg2');lg.innerHTML='';['Cash','Online','Scholarship','Other'].forEach((n,i)=>{const s=document.createElement('span');const sw=document.createElement('i');sw.className='sw';sw.style.background=dash.colors[i];s.append(sw,n);lg.append(s)});
+  if(d.status!=='ok'){failed(el,d.status);return}
+  const keys=['cash','online','scholarship','other'],names=['Cash','Online','Scholarship','Other'];
+  const rows=d.data.map(r=>({...r,dt:new Date(r.month+'-01T00:00:00Z'),total:+r.total}));
+  const W=el.clientWidth||600,H=240,m={t:10,r:8,b:28,l:8};
+  const svg=d3.select(el).append('svg').attr('width','100%').attr('viewBox',`0 0 ${W} ${H}`);
+  const y=d3.scaleLinear([0,d3.max(rows,r=>r.total)*1.05],[H-m.b,m.t]).nice();
+  const fmtY=v=>v>=1e7?(v/1e7)+' Cr':(v>=1e5?(v/1e5)+' L':v);
+  const ticks=y.ticks(4); const tmp=svg.append('text').attr('font-size',11).text(fmtY(ticks[ticks.length-1])); m.l=tmp.node().getComputedTextLength()+10; tmp.remove();
+  const x=d3.scaleBand(rows.map(r=>r.month),[m.l,W-m.r]).padding(0.25);
+  svg.append('g').selectAll('line').data(ticks).join('line').attr('x1',m.l).attr('x2',W-m.r).attr('y1',y).attr('y2',y).attr('stroke','var(--cds-chart-grid)');
+  svg.append('g').selectAll('text').data(ticks).join('text').attr('x',m.l-6).attr('y',v=>y(v)+4).attr('text-anchor','end').attr('font-size',11).attr('fill','var(--color-fg-muted)').text(fmtY);
+  const fyx=x('2026-04'); if(fyx!=null){svg.append('line').attr('x1',fyx-x.step()*x.paddingInner()/2).attr('x2',fyx-x.step()*x.paddingInner()/2).attr('y1',m.t).attr('y2',H-m.b).attr('stroke','var(--color-fg-muted)').attr('stroke-dasharray','4 3');}
+  const st=d3.stack().keys(keys).value((r,k)=>+r[k])(rows);
+  st.forEach((s,i)=>svg.append('g').selectAll('rect').data(s).join('rect').attr('x',p=>x(p.data.month)).attr('width',x.bandwidth()).attr('y',p=>y(p[1])).attr('height',p=>Math.max(0,y(p[0])-y(p[1]))).attr('fill',dash.colors[i]));
+  const every=Math.ceil(rows.length/Math.max(1,Math.floor(W/48)));
+  svg.append('g').selectAll('text').data(rows.filter((r,i)=>i%every===0)).join('text').attr('x',r=>x(r.month)+x.bandwidth()/2).attr('y',H-8).attr('text-anchor','middle').attr('font-size',11).attr('fill','var(--color-fg-muted)').text(r=>d3.utcFormat("%b '%y")(r.dt));
+  const tip=d3.select(el).append('div').attr('class','tip').style('display','none');
+  svg.append('g').selectAll('rect').data(rows).join('rect').attr('x',r=>x(r.month)-x.step()*x.paddingInner()/2).attr('width',x.step()).attr('y',m.t).attr('height',H-m.b-m.t).attr('fill','transparent')
+    .on('mousemove click',(ev,r)=>{tip.style('display',null).html('');tip.append('div').attr('class','d').text(d3.utcFormat('%B %Y')(r.dt));
+      keys.forEach((k,i)=>{const l=tip.append('div');l.append('span').attr('class','sw').style('background',dash.colors[i]);l.append('span').text(names[i]+': '+INR(r[k]))});
+      tip.append('div').text('Total: '+INR(r.total));
+      const [px,py]=d3.pointer(ev,el);const tw=tip.node().offsetWidth;tip.style('left',Math.min(Math.max(0,px+12),el.clientWidth-tw)+'px').style('top',Math.max(0,py-60)+'px')})
+    .on('mouseleave',()=>tip.style('display','none'));
+}
+
+function drawDaily(){
+  const el=document.getElementById('daily'); const d=dash.data('daily'); el.innerHTML='';
+  const leg=document.getElementById('leg'); leg.innerHTML='';
+  if(d.status!=='ok'){failed(el,d.status);return}
+  const keys=['cash','online','scholarship','other'],names=['Cash','Online','Scholarship','Other'];
+  keys.forEach((k,i)=>{const s=document.createElement('span');const sw=document.createElement('i');sw.className='sw';sw.style.background=dash.colors[i];s.append(sw,names[i]);leg.append(s)});
+  const rows=d.data.map(r=>({...r,dt:new Date(r.day+'T00:00:00Z'),total:+r.total}));
+  const W=el.clientWidth||600,H=240,m={t:10,r:8,b:28,l:8};
+  const svg=d3.select(el).append('svg').attr('width','100%').attr('viewBox',`0 0 ${W} ${H}`);
+  const y=d3.scaleLinear([0,d3.max(rows,r=>r.total)*1.05],[H-m.b,m.t]).nice();
+  const fmtY=v=>v>=1e5?(v/1e5)+' L':v;
+  const ticks=y.ticks(4); const tmp=svg.append('text').attr('font-size',11).text(fmtY(ticks[ticks.length-1])); const lw=tmp.node().getComputedTextLength()+6; tmp.remove();
+  m.l=lw+4;
+  const x=d3.scaleBand(rows.map(r=>r.day),[m.l,W-m.r]).padding(0.2);
+  svg.append('g').selectAll('line').data(ticks).join('line').attr('x1',m.l).attr('x2',W-m.r).attr('y1',y).attr('y2',y).attr('stroke','var(--cds-chart-grid)');
+  svg.append('g').selectAll('text').data(ticks).join('text').attr('x',m.l-6).attr('y',v=>y(v)+4).attr('text-anchor','end').attr('font-size',11).attr('fill','var(--color-fg-muted)').text(fmtY);
+  rows.forEach(r=>{if(r.weekday==='Sun'||r.day==='2026-10-02')svg.append('rect').attr('x',x(r.day)-x.step()*x.paddingInner()/2).attr('y',m.t).attr('width',x.step()).attr('height',H-m.b-m.t).attr('fill','var(--cds-chart-grid)').attr('opacity',.6)});
+  const st=d3.stack().keys(keys).value((r,k)=>+r[k])(rows);
+  st.forEach((s,i)=>svg.append('g').selectAll('rect').data(s).join('rect').attr('x',p=>x(p.data.day)).attr('width',x.bandwidth()).attr('y',p=>y(p[1])).attr('height',p=>Math.max(0,y(p[0])-y(p[1]))).attr('fill',dash.colors[i]));
+  const lab=rows.filter((r,i)=>i%Math.ceil(rows.length/(W/60))===0);
+  svg.append('g').selectAll('text').data(lab).join('text').attr('x',r=>x(r.day)+x.bandwidth()/2).attr('y',H-8).attr('text-anchor','middle').attr('font-size',11).attr('fill','var(--color-fg-muted)').text(r=>d3.utcFormat('%b %-d')(r.dt));
+  const tip=d3.select(el).append('div').attr('class','tip').style('display','none');
+  svg.append('g').selectAll('rect').data(rows).join('rect').attr('x',r=>x(r.day)-x.step()*x.paddingInner()/2).attr('width',x.step()).attr('y',m.t).attr('height',H-m.b-m.t).attr('fill','transparent')
+    .on('mousemove',(ev,r)=>{tip.style('display',null).html('');tip.append('div').attr('class','d').text(d3.utcFormat('%a, %b %-d')(r.dt)+' · '+NUM(r.receipts)+' receipts');
+      keys.forEach((k,i)=>{const l=tip.append('div');l.append('span').attr('class','sw').style('background',dash.colors[i]);l.append('span').text(names[i]+': '+INR(r[k]))});
+      tip.append('div').text('Total: '+INR(r.total));
+      const [px,py]=d3.pointer(ev,el);const tw=tip.node().offsetWidth;tip.style('left',Math.min(Math.max(0,px+12),el.clientWidth-tw)+'px').style('top',Math.max(0,py-60)+'px')})
+    .on('mouseleave',()=>tip.style('display','none'));
+}
+
+function drawModes(P){
+  const el=document.getElementById('modes'); const d=dash.data('modes'); el.innerHTML='';
+  if(d.status!=='ok'){failed(el,d.status);return}
+  const col=PCOL[P]; const rows=d.data.map(r=>({mode:r.mode,v:+r[col]})).filter(r=>r.v>0).sort((a,b)=>b.v-a.v);
+  const tot=d3.sum(rows,r=>r.v);
+  const wrap=document.createElement('div');wrap.style.cssText='display:flex;flex-direction:column;gap:10px';
+  rows.forEach((r,i)=>{const row=document.createElement('div');
+    const top=document.createElement('div');top.style.cssText='display:flex;justify-content:space-between;gap:8px;font-size:var(--cds-font-size-body)';
+    const a=document.createElement('span');a.textContent=r.mode;const b=document.createElement('span');b.textContent=INR(r.v)+' · '+PCT(r.v/tot);
+    b.setAttribute('data-source','modes');b.setAttribute('data-field',col);b.setAttribute('data-where','mode='+encodeURIComponent(r.mode));
+    top.append(a,b);const bar=document.createElement('div');bar.className='bar';bar.style.width=(r.v/rows[0].v*100)+'%';bar.style.background=i===0?dash.colors[1]:(r.mode==='Cash'?dash.colors[0]:'var(--cds-chart-muted)');
+    if(r.mode==='Cash')bar.style.background=dash.colors[0]; if(r.mode==='Online')bar.style.background=dash.colors[1]; if(r.mode==='Scholarship')bar.style.background=dash.colors[2];
+    row.append(top,bar);wrap.append(row)});
+  el.append(wrap);
+}
+
+function sortable(tbl,state,redraw){
+  tbl.querySelectorAll('th').forEach((th,i)=>{if(th.querySelector('button'))return;const b=document.createElement('button');b.textContent=th.textContent;th.textContent='';th.append(b);
+    b.addEventListener('click',()=>{state.k=th.dataset.field;state.dir=state.k===state.prev?-state.dir:-1;state.prev=state.k;redraw()})});
+}
+const BS={k:null,dir:-1},US={k:'amount_30_days',dir:-1,prev:'amount_30_days'};
+
+function drawBranches(P){
+  const t=document.getElementById('branches'),tb=t.tBodies[0];tb.innerHTML='';
+  const d=dash.data('branches'),c=dash.data('bvs'),lt=dash.data('loctot');
+  const pk=PK[P];
+  t.querySelectorAll('th.bc').forEach(th=>th.dataset.field=pk+'_'+th.dataset.k);
+  const VK={'Yesterday':'vs_avg','Last 7 days':'vs_avg_7','This FY':'vs_ly'}[P]||'vs_avg';const vth=t.querySelector('[data-field="vs_avg"],[data-field="vs_avg_7"],[data-field="vs_ly"]'); vth.dataset.field=VK;
+  sortable(t,BS,draw);
+  (vth.querySelector('button')||vth).textContent=P==='This FY'?'vs same period last FY':(P==='Yesterday'||P==='Last 7 days'?'vs 30-day avg':'—');
+  if(d.status!=='ok'){failed(tb,d.status);return}
+  const sel=document.getElementById('f-loc');if(sel.options.length===1)[...new Set(d.data.map(r=>r.location))].sort().forEach(l=>{const o=document.createElement('option');o.textContent=l;sel.append(o)});
+  const cv={};(c.status==='ok'?c.data:[]).forEach(r=>cv[r.branch]=r);
+  const fl=sel.value;
+  let k=BS.k||(pk+'_total'); if(/^[ywmfp]_/.test(k))k=pk+k.slice(k.indexOf('_'));
+  const val=(r,k)=>/^vs_/.test(k)?(cv[r.branch]||{})[k]:r[k];
+  const rows=d.data.filter(r=>!fl||r.location===fl).sort((a,b)=>{const x=val(a,k),y=val(b,k);return (isNaN(+x)?String(x).localeCompare(y):(+x)-(+y))*(BS.k?BS.dir:-1)});
+  const mx=d3.max(rows,r=>+r[pk+'_total'])||1;
+  rows.forEach(r=>{const tr=document.createElement('tr');
+    const td=(v,cls)=>{const e=document.createElement('td');if(cls)e.className=cls;e.textContent=v;tr.append(e);return e};
+    td(r.branch);
+    const a=td(INR(r[pk+'_total']),'n');a.style.fontWeight='600';const bar=document.createElement('div');bar.className='bar';bar.style.width=(+r[pk+'_total']/mx*100)+'%';bar.style.marginLeft='auto';bar.style.background=dash.colors[1];a.append(bar);
+    td(r.location);td(NUM(r[pk+'_receipts']),'n');td(INR(r[pk+'_cash']),'n');td(INR(r[pk+'_online']),'n');td(INR(r[pk+'_scholarship']),'n');td(INR(r[pk+'_others']),'n');
+    td(INR(r.avg_day_30),'n');
+    const show=['Yesterday','Last 7 days','This FY'].includes(P);const v=show?(cv[r.branch]||{})[VK]:null;
+    const lim=P==='This FY'?0.1:0.5;const e=td(v==null?'—':(v>=0?'+':'')+PCT(v),'n'); if(v!=null)e.style.color=v<=-lim?'var(--color-bad)':(v>=lim?'var(--color-ok)':'');
+    tb.append(tr)});
+  const lb=document.getElementById('locs').tBodies[0];lb.innerHTML='';
+  if(lt.status==='ok')lt.data.forEach(r=>{const tr=document.createElement('tr');const td=(v,c)=>{const e=document.createElement('td');if(c)e.className=c;e.textContent=v;tr.append(e)};
+    td(r.location);td(INR(r.yesterday),'n');td(INR(r.last_7_days),'n');td(INR(r.past_30_days),'n');td(INR(r.this_fy),'n');td(INR(r.last_fy),'n');lb.append(tr)});
+}
+
+function drawUsers(){
+  const t=document.getElementById('users'),tb=t.tBodies[0];tb.innerHTML='';sortable(t,US,draw);
+  const d=dash.data('users');if(d.status!=='ok'){failed(tb,d.status);return}
+  const k=US.k||'amount_30_days';
+  const rows=[...d.data].sort((a,b)=>(isNaN(+a[k])?String(a[k]).localeCompare(b[k]):(+a[k])-(+b[k]))*US.dir);
+  rows.forEach(r=>{const tr=document.createElement('tr');const td=(v,c)=>{const e=document.createElement('td');if(c)e.className=c;e.textContent=v;tr.append(e)};
+    td(r.user);td(NUM(r.receipts_yesterday),'n');td(NUM(r.receipts_7_days),'n');td(INR(r.amount_7_days),'n');td(NUM(r.receipts_30_days),'n');td(INR(r.amount_30_days),'n');td(INR(r.cash_30_days),'n');tb.append(tr)});
+}
+
+dash.onData(draw);
+})();
+</script>
+</div></body></html>
