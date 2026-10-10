@@ -14,7 +14,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(-
  function data(id){if(DATA[id])return {status:'ok',data:DATA[id],columns:Object.keys(DATA[id][0]||{})};if(calcs[id]){const c=calcs[id];return {status:'ok',data:c.fn(...c.inputs.map(i=>data(i).data))}}return {status:'missing',data:[]}}
  return {data,calc:(id,o)=>{calcs[id]=o},onData:fn=>{subs.push(fn);fn();let t;window.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(fn,150)})},
   colors:['var(--s1)','var(--s2)','var(--s3)','var(--s4)','#888','#888','#888','#888'],refresh:()=>{},params:()=>({}),setParams:()=>{},resetParams:()=>{},setLink:()=>{}}})();</script></head>
-<body><div id="dash-root"><p class="asof">St. Wilfred's Education Society · Fee Department · Data as of 8 Oct 2026 (ScholarsERP Day Book, all branches)</p>
+<body><div id="dash-root"><p class="asof">St. Wilfred's Education Society · Fee Department · Data as of <span class="lbl" data-k="ASOF"></span> (ScholarsERP Day Book, all branches)</p>
 <style>
 .db{font-family:var(--font-anthropic-sans);display:flex;flex-direction:column;gap:var(--cds-gap-lg);font-variant-numeric:tabular-nums}
 .db h1{font-family:var(--font-anthropic-serif);font-weight:400;font-size:var(--cds-font-size-title);margin:0;text-wrap:balance}
@@ -79,11 +79,11 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(-
     <p class="take" id="take" data-source="kpi">—</p>
   </header>
   <div class="pick"><span class="pick-lab">Tap to change period</span><div class="seg hint" role="group" aria-label="Period">
-    <button type="button" data-p="Yesterday" aria-pressed="true"><b>Yesterday</b><small>8 Oct</small></button>
-    <button type="button" data-p="Last 7 days" aria-pressed="false"><b>Last 7 days</b><small>2–8 Oct</small></button>
-    <button type="button" data-p="Past 30 days" aria-pressed="false"><b>Past 30 days</b><small>9 Sep–8 Oct</small></button>
-    <button type="button" data-p="This FY" aria-pressed="false"><b>This FY</b><small>2026-27 till 8 Oct</small></button>
-    <button type="button" data-p="Last FY" aria-pressed="false"><b>Last FY</b><small>2025-26</small></button>
+    <button type="button" data-p="Yesterday" aria-pressed="true"><b>Yesterday</b><small><span class="lbl" data-k="Y"></span></small></button>
+    <button type="button" data-p="Last 7 days" aria-pressed="false"><b>Last 7 days</b><small><span class="lbl" data-k="W"></span></small></button>
+    <button type="button" data-p="Past 30 days" aria-pressed="false"><b>Past 30 days</b><small><span class="lbl" data-k="M"></span></small></button>
+    <button type="button" data-p="This FY" aria-pressed="false"><b>This FY</b><small><span class="lbl" data-k="FYL"></span> till <span class="lbl" data-k="FYEND"></span></small></button>
+    <button type="button" data-p="Last FY" aria-pressed="false"><b>Last FY</b><small><span class="lbl" data-k="PFYL"></span></small></button>
   </div></div>
   <section class="tiles" id="tiles">
     <div class="tile"><span class="lab">Total collection</span><span class="big dash-skeleton" data-source="kpi" data-field="total">—</span><span class="sub"><span data-source="kpi" data-field="receipts">—</span> receipts</span></div>
@@ -95,7 +95,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(-
 
   <section class="card" id="branch-card">
     <h2>Branch-wise collection report</h2>
-    <p class="note" id="bnote">For the period picked above. Others = Gray Quest + Cheque/DD. The last column compares yesterday / last 7 days with the branch's 30-day daily average, and This FY with the same dates last FY (1 Apr – 8 Oct 2025).</p>
+    <p class="note" id="bnote">For the period picked above. Others = Gray Quest + Cheque/DD. The last column compares yesterday / last 7 days with the branch's 30-day daily average, and This FY with the same dates last FY (<span class="lbl" data-k="LYR"></span>).</p>
     <div class="tools"><label>Location <select id="f-loc"><option value="">All</option></select></label></div>
     <div class="tw" style="max-height:560px">
       <table id="branches" data-source="branches" data-row-key="branch">
@@ -120,13 +120,13 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(-
   <div class="grid">
     <section class="card" id="daily-card">
       <h2>Collection by day</h2>
-      <p class="note">9 Sep – 8 Oct. Sundays and the 2 Oct holiday are shaded.</p>
+      <p class="note"><span class="lbl" data-k="MN"></span>. Sundays and the 2 Oct holiday are shaded.</p>
       <div class="legend" id="leg"></div>
       <div class="chart" id="daily" data-source="daily"></div>
     </section>
     <section class="card" id="month-card">
       <h2>Collection by month</h2>
-      <p class="note">Apr 2025 – Oct 2026 (Oct up to 8th). FY 2025-26 and FY 2026-27.</p>
+      <p class="note"><span class="lbl" data-k="MONTHS"></span>. FY <span class="lbl" data-k="PFYL"></span> and FY <span class="lbl" data-k="FYL"></span>.</p>
       <div class="legend" id="leg2"></div>
       <div class="chart" id="monthly" data-source="monthly"></div>
     </section>
@@ -323,4 +323,4 @@ function drawUsers(){
 dash.onData(draw);
 })();
 </script>
-</div></body></html>
+</div><script>document.querySelectorAll(".lbl").forEach(e=>e.textContent=(window.LABELS||{})[e.dataset.k]||"")</script></body></html>
