@@ -28,7 +28,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(-
 .db .seg button[aria-pressed=true]{background:var(--color-fg);color:var(--color-bg)}
 .db .seg button:active{transform:scale(.96)}
 .db .seg button:focus-visible{outline:3px solid var(--color-fg-muted);outline-offset:2px}
-@media (prefers-reduced-motion:no-preference){.db .seg.hint button[aria-pressed=false]{animation:dbpulse 1.6s ease-out infinite}}
+@media (prefers-reduced-motion:no-preference){.db .seg.hint button[aria-pressed=false]{animation:dbpulse 1.6s ease-out 3}}
 @keyframes dbpulse{0%{box-shadow:0 0 0 0 rgba(47,111,179,.55)}70%{box-shadow:0 0 0 10px rgba(47,111,179,0)}100%{box-shadow:0 2px 6px rgba(0,0,0,.12)}}
 .db .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));gap:var(--cds-gap-md)}
 .db .tile{background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:var(--cds-radius);padding:var(--cds-pad-md);display:flex;flex-direction:column;gap:4px;min-width:0}
