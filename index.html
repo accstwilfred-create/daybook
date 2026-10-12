@@ -72,14 +72,36 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(-
  .db #branches td:first-child,.db #branches th:first-child{position:sticky;left:0;background:var(--color-panel);z-index:1;min-width:9rem}
  .db #branches th:first-child{z-index:2}
 }
+.db [hidden]{display:none!important}
+.db .pwcard{border:2px solid var(--color-warn);background:color-mix(in srgb,var(--color-warn) 8%,var(--color-panel))}
+.db .pwcard h2{margin:0 0 4px}
+.db .pwrow{display:flex;flex-wrap:wrap;gap:var(--cds-gap-md);margin-top:8px}
+.db .pwrow>div{flex:1 1 9rem;min-width:0}
+.db .pwrow .lab{display:block;font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
+.db .pwrow .big{font-family:var(--font-anthropic-serif);font-size:1.5rem}
+.db .pwtop{margin:8px 0 0;padding-left:1.2rem}
+.db .pwtop li{margin:2px 0}
 </style>
 <div class="db">
   <header>
     <h1 id="top">Daybook Dashboard (Wilfred)</h1>
     <p class="take" id="take" data-source="kpi">—</p>
   </header>
+  <section class="card pwcard" id="pwcard" hidden>
+    <h2>Yesterday (<span class="lbl" data-k="YW"></span>) was <span class="lbl" data-k="HOLWHY"></span> — last working day: <span class="lbl" data-k="PW"></span></h2>
+    <p class="note">Shown separately so the working-day collection is not lost. Tap "Last working day" above for its full branch and mode breakdown.</p>
+    <div class="pwrow">
+      <div><span class="lab">Total collection</span><span class="big pwv" data-source="kpi" data-field="total" data-where="period=Last%20working%20day">—</span></div>
+      <div><span class="lab">Receipts</span><span class="big pwv" data-source="kpi" data-field="receipts" data-where="period=Last%20working%20day">—</span></div>
+      <div><span class="lab">Cash</span><span class="big pwv" data-source="kpi" data-field="cash" data-where="period=Last%20working%20day">—</span></div>
+      <div><span class="lab">Online / NEFT</span><span class="big pwv" data-source="kpi" data-field="online" data-where="period=Last%20working%20day">—</span></div>
+    </div>
+    <p class="note" style="margin-top:8px">Top 3 branches that day:</p>
+    <ol class="pwtop" id="pwtop"></ol>
+  </section>
   <div class="pick"><span class="pick-lab">Tap to change period</span><div class="seg hint" role="group" aria-label="Period">
     <button type="button" data-p="Yesterday" aria-pressed="true"><b>Yesterday</b><small><span class="lbl" data-k="Y"></span></small></button>
+    <button type="button" data-p="Last working day" aria-pressed="false" id="pwbtn" hidden><b>Last working day</b><small><span class="lbl" data-k="PW"></span></small></button>
     <button type="button" data-p="Last 7 days" aria-pressed="false"><b>Last 7 days</b><small><span class="lbl" data-k="W"></span></small></button>
     <button type="button" data-p="Past 30 days" aria-pressed="false"><b>Past 30 days</b><small><span class="lbl" data-k="M"></span></small></button>
     <button type="button" data-p="This FY" aria-pressed="false"><b>This FY</b><small><span class="lbl" data-k="FYL"></span> till <span class="lbl" data-k="FYEND"></span></small></button>
@@ -144,7 +166,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(-
       <table id="users" data-source="users" data-row-key="user">
         <thead><tr>
           <th data-field="user">User</th>
-          <th class="n" data-field="receipts_yesterday">Receipts 8 Oct</th>
+          <th class="n" data-field="receipts_yesterday">Receipts <span class="lbl" data-k="Y"></span></th>
           <th class="n" data-field="receipts_7_days">Receipts 7 days</th>
           <th class="n" data-field="amount_7_days">Amount 7 days</th>
           <th class="n" data-field="receipts_30_days">Receipts 30 days</th>
@@ -163,12 +185,12 @@ const INR=v=>'₹'+Math.round(+v||0).toLocaleString('en-IN');
 const NUM=v=>Math.round(+v||0).toLocaleString('en-IN');
 const PCT=v=>((+v||0)*100).toFixed(1)+'%';
 window.DBP=window.DBP||{p:'Yesterday'};
-const PCOL={'Yesterday':'yesterday','Last 7 days':'last_7_days','Past 30 days':'past_30_days','This FY':'this_fy','Last FY':'last_fy'};
+const PCOL={'Yesterday':'yesterday','Last working day':'last_working_day','Last 7 days':'last_7_days','Past 30 days':'past_30_days','This FY':'this_fy','Last FY':'last_fy'};
 const EPER={'Yesterday':['Yesterday'],'Last 7 days':['Yesterday','Last 7 days'],'Past 30 days':['Yesterday','Last 7 days','Past 30 days']};
 
-const PK={'Yesterday':'y','Last 7 days':'w','Past 30 days':'m','This FY':'f','Last FY':'p'};
+const PK={'Yesterday':'y','Last working day':'pw','Last 7 days':'w','Past 30 days':'m','This FY':'f','Last FY':'p'};
 dash.calc('bvs',{inputs:['branches'],title:'Branch growth / vs average',description:'Yesterday and last-7-days daily average vs the branch 30-day daily average; this FY vs the same dates last FY.',
- fn:(branches)=>branches.map(b=>({branch:b.branch,vs_avg:+b.avg_day_30?(+b.y_total)/(+b.avg_day_30)-1:0,vs_avg_7:+b.avg_day_30?(+b.w_total/7)/(+b.avg_day_30)-1:0,vs_ly:+b.ly_total?(+b.f_total)/(+b.ly_total)-1:null}))});
+ fn:(branches)=>branches.map(b=>({branch:b.branch,vs_avg:+b.avg_day_30?(+b.y_total)/(+b.avg_day_30)-1:0,vs_avg_7:+b.avg_day_30?(+b.w_total/7)/(+b.avg_day_30)-1:0,vs_avg_pw:+b.avg_day_30?(+b.pw_total||0)/(+b.avg_day_30)-1:0,vs_ly:+b.ly_total?(+b.f_total)/(+b.ly_total)-1:null}))});
 dash.calc('loctot',{inputs:['branches'],title:'Location totals',description:'Branch totals added up by location for each period.',
  fn:(branches)=>{const m={};branches.forEach(b=>{const r=m[b.location]=m[b.location]||{location:b.location,yesterday:0,last_7_days:0,past_30_days:0,this_fy:0,last_fy:0};r.yesterday+=+b.y_total;r.last_7_days+=+b.w_total;r.past_30_days+=+b.m_total;r.this_fy+=+b.f_total;r.last_fy+=+b.p_total});const all=Object.values(m);const t=all.reduce((a,r)=>a+r.past_30_days,0);all.forEach(r=>r.share_30=t?r.past_30_days/t:0);return all.sort((a,b)=>b.past_30_days-a.past_30_days)}});
 document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
@@ -183,7 +205,7 @@ function draw(){
   const P=DBP.p;
   // KPI
   const k=dash.data('kpi');
-  document.querySelectorAll('[data-source="kpi"][data-field]').forEach(el=>{
+  document.querySelectorAll('[data-source="kpi"][data-field]:not(.pwv)').forEach(el=>{
     el.setAttribute('data-where','period='+encodeURIComponent(P));
     if(k.status!=='ok'){if(k.status!=='loading')failed(el,k.status);return}
     el.classList.remove('dash-skeleton');
@@ -198,9 +220,23 @@ function draw(){
     take.textContent=`Yesterday's collection of ${INR(y.total)} was ${vs.toFixed(1)}× the 30-day daily average (${INR(m.avg_per_day)}). The last 7 days brought in ${INR(w.total)}, ${PCT(w.total/m.total)} of the past 30 days.${fy?` This FY so far: ${INR(fy.total)}, ${(fy.total/fy.same_period_last_year-1>=0?'up ':'down ')+PCT(Math.abs(fy.total/fy.same_period_last_year-1))} on the same period last year.`:''} Cash was ${PCT(y.cash_share)} of yesterday's collection.`;
   } else take.textContent='—';
 
+  drawPW(k);
   drawDaily(); drawMonthly(); drawModes(P); drawBranches(P); drawUsers();
 }
 
+function drawPW(k){
+  const card=document.getElementById('pwcard'),btn=document.getElementById('pwbtn');
+  const r=k.status==='ok'?k.data.find(x=>x.period==='Last working day'):null;
+  card.hidden=!r; btn.hidden=!r; if(!r&&DBP.p==='Last working day')DBP.p='Yesterday';
+  if(!r)return;
+  card.querySelectorAll('.pwv').forEach(el=>{const f=el.dataset.field,v=r[f];el.textContent=f==='receipts'?NUM(v):INR(v)});
+  const ol=document.getElementById('pwtop');ol.innerHTML='';
+  const b=dash.data('branches'); if(b.status!=='ok')return;
+  b.data.filter(x=>+x.pw_total>0).sort((a,c)=>c.pw_total-a.pw_total).slice(0,3).forEach(x=>{
+    const li=document.createElement('li');const nm=document.createElement('span');nm.textContent=x.branch+' – ';
+    const v=document.createElement('span');v.dataset.source='branches';v.dataset.field='pw_total';v.dataset.where='branch='+encodeURIComponent(x.branch);v.textContent=INR(x.pw_total);
+    li.append(nm,v);ol.append(li)});
+}
 function drawMonthly(){
   const el=document.getElementById('monthly'); const d=dash.data('monthly'); el.innerHTML='';
   const lg=document.getElementById('leg2');lg.innerHTML='';['Cash','Online','Scholarship','Other'].forEach((n,i)=>{const s=document.createElement('span');const sw=document.createElement('i');sw.className='sw';sw.style.background=dash.colors[i];s.append(sw,n);lg.append(s)});
@@ -286,9 +322,9 @@ function drawBranches(P){
   const d=dash.data('branches'),c=dash.data('bvs'),lt=dash.data('loctot');
   const pk=PK[P];
   t.querySelectorAll('th.bc').forEach(th=>th.dataset.field=pk+'_'+th.dataset.k);
-  const VK={'Yesterday':'vs_avg','Last 7 days':'vs_avg_7','This FY':'vs_ly'}[P]||'vs_avg';const vth=t.querySelector('[data-field="vs_avg"],[data-field="vs_avg_7"],[data-field="vs_ly"]'); vth.dataset.field=VK;
+  const VK={'Yesterday':'vs_avg','Last working day':'vs_avg_pw','Last 7 days':'vs_avg_7','This FY':'vs_ly'}[P]||'vs_avg';const vth=t.querySelector('[data-field="vs_avg"],[data-field="vs_avg_7"],[data-field="vs_ly"]'); vth.dataset.field=VK;
   sortable(t,BS,draw);
-  (vth.querySelector('button')||vth).textContent=P==='This FY'?'vs same period last FY':(P==='Yesterday'||P==='Last 7 days'?'vs 30-day avg':'—');
+  (vth.querySelector('button')||vth).textContent=P==='This FY'?'vs same period last FY':(P==='Yesterday'||P==='Last 7 days'||P==='Last working day'?'vs 30-day avg':'—');
   if(d.status!=='ok'){failed(tb,d.status);return}
   const sel=document.getElementById('f-loc');if(sel.options.length===1)[...new Set(d.data.map(r=>r.location))].sort().forEach(l=>{const o=document.createElement('option');o.textContent=l;sel.append(o)});
   const cv={};(c.status==='ok'?c.data:[]).forEach(r=>cv[r.branch]=r);
@@ -303,7 +339,7 @@ function drawBranches(P){
     const a=td(INR(r[pk+'_total']),'n');a.style.fontWeight='600';const bar=document.createElement('div');bar.className='bar';bar.style.width=(+r[pk+'_total']/mx*100)+'%';bar.style.marginLeft='auto';bar.style.background=dash.colors[1];a.append(bar);
     td(r.location);td(NUM(r[pk+'_receipts']),'n');td(INR(r[pk+'_cash']),'n');td(INR(r[pk+'_online']),'n');td(INR(r[pk+'_scholarship']),'n');td(INR(r[pk+'_others']),'n');
     td(INR(r.avg_day_30),'n');
-    const show=['Yesterday','Last 7 days','This FY'].includes(P);const v=show?(cv[r.branch]||{})[VK]:null;
+    const show=['Yesterday','Last 7 days','This FY','Last working day'].includes(P);const v=show?(cv[r.branch]||{})[VK]:null;
     const lim=P==='This FY'?0.1:0.5;const e=td(v==null?'—':(v>=0?'+':'')+PCT(v),'n'); if(v!=null)e.style.color=v<=-lim?'var(--color-bad)':(v>=lim?'var(--color-ok)':'');
     tb.append(tr)});
   const lb=document.getElementById('locs').tBodies[0];lb.innerHTML='';
