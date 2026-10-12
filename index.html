@@ -73,6 +73,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(-
  .db #branches th:first-child{z-index:2}
 }
 .db [hidden]{display:none!important}
+.db .selcol{background:color-mix(in srgb,var(--color-fg) 9%,transparent);font-weight:700}
 .db .pwcard{border:2px solid var(--color-warn);background:color-mix(in srgb,var(--color-warn) 8%,var(--color-panel))}
 .db .pwcard h2{margin:0 0 4px}
 .db .pwrow{display:flex;flex-wrap:wrap;gap:var(--cds-gap-md);margin-top:8px}
@@ -135,7 +136,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(-
     </div>
     <h2 style="margin-top:var(--cds-gap-md)">Location totals</h2>
     <div class="tw"><table id="locs" data-source="loctot" data-row-key="location">
-      <thead><tr><th data-field="location">Location</th><th class="n" data-field="yesterday">Yesterday</th><th class="n" data-field="last_7_days">Last 7 days</th><th class="n" data-field="past_30_days">Past 30 days</th><th class="n" data-field="this_fy">This FY</th><th class="n" data-field="last_fy">Last FY</th></tr></thead><tbody></tbody>
+      <thead><tr><th data-field="location">Location</th><th class="n" data-field="yesterday">Yesterday</th><th class="n" data-field="last_working_day" id="loc-pw">Last working day</th><th class="n" data-field="last_7_days">Last 7 days</th><th class="n" data-field="past_30_days">Past 30 days</th><th class="n" data-field="this_fy">This FY</th><th class="n" data-field="last_fy">Last FY</th></tr></thead><tbody></tbody>
     </table></div>
   </section>
 
@@ -161,17 +162,15 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(-
 
   <section class="card" id="user-card">
     <h2>User-wise entries</h2>
-    <p class="note">"Online (self-paid by student)" means no user — paid through the payment gateway.</p>
+    <p class="note"><b id="unote-p"></b> "Online (self-paid by student)" means no user — paid through the payment gateway.</p>
     <div class="tw">
       <table id="users" data-source="users" data-row-key="user">
         <thead><tr>
           <th data-field="user">User</th>
-          <th class="n" data-field="receipts_yesterday">Receipts <span class="lbl" data-k="Y"></span></th>
-          <th class="n" data-field="receipts_7_days">Receipts 7 days</th>
-          <th class="n" data-field="amount_7_days">Amount 7 days</th>
-          <th class="n" data-field="receipts_30_days">Receipts 30 days</th>
-          <th class="n" data-field="amount_30_days">Amount 30 days</th>
-          <th class="n" data-field="cash_30_days">Cash 30 days</th>
+          <th class="n uc" data-k="receipts" data-field="u_y_receipts">Receipts</th>
+          <th class="n uc" data-k="amount" data-field="u_y_amount">Amount</th>
+          <th class="n uc" data-k="cash" data-field="u_y_cash">Cash</th>
+          <th class="n uc" data-k="online" data-field="u_y_online">Online</th>
         </tr></thead><tbody></tbody>
       </table>
     </div>
@@ -192,7 +191,7 @@ const PK={'Yesterday':'y','Last working day':'pw','Last 7 days':'w','Past 30 day
 dash.calc('bvs',{inputs:['branches'],title:'Branch growth / vs average',description:'Yesterday and last-7-days daily average vs the branch 30-day daily average; this FY vs the same dates last FY.',
  fn:(branches)=>branches.map(b=>({branch:b.branch,vs_avg:+b.avg_day_30?(+b.y_total)/(+b.avg_day_30)-1:0,vs_avg_7:+b.avg_day_30?(+b.w_total/7)/(+b.avg_day_30)-1:0,vs_avg_pw:+b.avg_day_30?(+b.pw_total||0)/(+b.avg_day_30)-1:0,vs_ly:+b.ly_total?(+b.f_total)/(+b.ly_total)-1:null}))});
 dash.calc('loctot',{inputs:['branches'],title:'Location totals',description:'Branch totals added up by location for each period.',
- fn:(branches)=>{const m={};branches.forEach(b=>{const r=m[b.location]=m[b.location]||{location:b.location,yesterday:0,last_7_days:0,past_30_days:0,this_fy:0,last_fy:0};r.yesterday+=+b.y_total;r.last_7_days+=+b.w_total;r.past_30_days+=+b.m_total;r.this_fy+=+b.f_total;r.last_fy+=+b.p_total});const all=Object.values(m);const t=all.reduce((a,r)=>a+r.past_30_days,0);all.forEach(r=>r.share_30=t?r.past_30_days/t:0);return all.sort((a,b)=>b.past_30_days-a.past_30_days)}});
+ fn:(branches)=>{const m={};branches.forEach(b=>{const r=m[b.location]=m[b.location]||{location:b.location,yesterday:0,last_7_days:0,past_30_days:0,this_fy:0,last_fy:0};r.yesterday+=+b.y_total;r.last_working_day=(r.last_working_day||0)+(+b.pw_total||0);r.last_7_days+=+b.w_total;r.past_30_days+=+b.m_total;r.this_fy+=+b.f_total;r.last_fy+=+b.p_total});const all=Object.values(m);const t=all.reduce((a,r)=>a+r.past_30_days,0);all.forEach(r=>r.share_30=t?r.past_30_days/t:0);return all.sort((a,b)=>b.past_30_days-a.past_30_days)}});
 document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
   DBP.p=b.dataset.p; b.parentElement.classList.remove('hint'); document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed',x===b));
   draw();
@@ -221,7 +220,7 @@ function draw(){
   } else take.textContent='—';
 
   drawPW(k);
-  drawDaily(); drawMonthly(); drawModes(P); drawBranches(P); drawUsers();
+  drawDaily(P); drawMonthly(P); drawModes(P); drawBranches(P); drawUsers(P);
 }
 
 function drawPW(k){
@@ -237,7 +236,7 @@ function drawPW(k){
     const v=document.createElement('span');v.dataset.source='branches';v.dataset.field='pw_total';v.dataset.where='branch='+encodeURIComponent(x.branch);v.textContent=INR(x.pw_total);
     li.append(nm,v);ol.append(li)});
 }
-function drawMonthly(){
+function drawMonthly(P){
   const el=document.getElementById('monthly'); const d=dash.data('monthly'); el.innerHTML='';
   const lg=document.getElementById('leg2');lg.innerHTML='';['Cash','Online','Scholarship','Other'].forEach((n,i)=>{const s=document.createElement('span');const sw=document.createElement('i');sw.className='sw';sw.style.background=dash.colors[i];s.append(sw,n);lg.append(s)});
   if(d.status!=='ok'){failed(el,d.status);return}
@@ -253,7 +252,9 @@ function drawMonthly(){
   svg.append('g').selectAll('text').data(ticks).join('text').attr('x',m.l-6).attr('y',v=>y(v)+4).attr('text-anchor','end').attr('font-size',11).attr('fill','var(--color-fg-muted)').text(fmtY);
   const fyx=x('2026-04'); if(fyx!=null){svg.append('line').attr('x1',fyx-x.step()*x.paddingInner()/2).attr('x2',fyx-x.step()*x.paddingInner()/2).attr('y1',m.t).attr('y2',H-m.b).attr('stroke','var(--color-fg-muted)').attr('stroke-dasharray','4 3');}
   const st=d3.stack().keys(keys).value((r,k)=>+r[k])(rows);
-  st.forEach((s,i)=>svg.append('g').selectAll('rect').data(s).join('rect').attr('x',p=>x(p.data.month)).attr('width',x.bandwidth()).attr('y',p=>y(p[1])).attr('height',p=>Math.max(0,y(p[0])-y(p[1]))).attr('fill',dash.colors[i]));
+  const lm=rows[rows.length-1].month,ly0=+lm.slice(0,4),fs=(+lm.slice(5)>=4?ly0:ly0-1);const f0=fs+'-04',f1=(fs+1)+'-03',p0=(fs-1)+'-04',p1=fs+'-03';
+  const inSel=mo=>P==='This FY'?(mo>=f0&&mo<=f1):P==='Last FY'?(mo>=p0&&mo<=p1):true;
+  st.forEach((s,i)=>svg.append('g').selectAll('rect').data(s).join('rect').attr('x',p=>x(p.data.month)).attr('width',x.bandwidth()).attr('y',p=>y(p[1])).attr('height',p=>Math.max(0,y(p[0])-y(p[1]))).attr('fill',dash.colors[i]).attr('opacity',p=>inSel(p.data.month)?1:.25));
   const every=Math.ceil(rows.length/Math.max(1,Math.floor(W/48)));
   svg.append('g').selectAll('text').data(rows.filter((r,i)=>i%every===0)).join('text').attr('x',r=>x(r.month)+x.bandwidth()/2).attr('y',H-8).attr('text-anchor','middle').attr('font-size',11).attr('fill','var(--color-fg-muted)').text(r=>d3.utcFormat("%b '%y")(r.dt));
   const tip=d3.select(el).append('div').attr('class','tip').style('display','none');
@@ -265,7 +266,7 @@ function drawMonthly(){
     .on('mouseleave',()=>tip.style('display','none'));
 }
 
-function drawDaily(){
+function drawDaily(P){
   const el=document.getElementById('daily'); const d=dash.data('daily'); el.innerHTML='';
   const leg=document.getElementById('leg'); leg.innerHTML='';
   if(d.status!=='ok'){failed(el,d.status);return}
@@ -283,7 +284,10 @@ function drawDaily(){
   svg.append('g').selectAll('text').data(ticks).join('text').attr('x',m.l-6).attr('y',v=>y(v)+4).attr('text-anchor','end').attr('font-size',11).attr('fill','var(--color-fg-muted)').text(fmtY);
   rows.forEach(r=>{if(r.weekday==='Sun'||r.day==='2026-10-02')svg.append('rect').attr('x',x(r.day)-x.step()*x.paddingInner()/2).attr('y',m.t).attr('width',x.step()).attr('height',H-m.b-m.t).attr('fill','var(--cds-chart-grid)').attr('opacity',.6)});
   const st=d3.stack().keys(keys).value((r,k)=>+r[k])(rows);
-  st.forEach((s,i)=>svg.append('g').selectAll('rect').data(s).join('rect').attr('x',p=>x(p.data.day)).attr('width',x.bandwidth()).attr('y',p=>y(p[1])).attr('height',p=>Math.max(0,y(p[0])-y(p[1]))).attr('fill',dash.colors[i]));
+  const lastD=rows[rows.length-1].day, pwd=(window.LABELS&&window.LABELS.PWISO)||'<span class="lbl" data-k="PWISO"></span>';
+  const d7=new Date(new Date(lastD+'T00:00:00Z').getTime()-6*864e5).toISOString().slice(0,10);
+  const inSel=dy=>P==='Yesterday'?dy===lastD:P==='Last working day'?dy===pwd:P==='Last 7 days'?dy>=d7:true;
+  st.forEach((s,i)=>svg.append('g').selectAll('rect').data(s).join('rect').attr('x',p=>x(p.data.day)).attr('width',x.bandwidth()).attr('y',p=>y(p[1])).attr('height',p=>Math.max(0,y(p[0])-y(p[1]))).attr('fill',dash.colors[i]).attr('opacity',p=>inSel(p.data.day)?1:.25));
   const lab=rows.filter((r,i)=>i%Math.ceil(rows.length/(W/60))===0);
   svg.append('g').selectAll('text').data(lab).join('text').attr('x',r=>x(r.day)+x.bandwidth()/2).attr('y',H-8).attr('text-anchor','middle').attr('font-size',11).attr('fill','var(--color-fg-muted)').text(r=>d3.utcFormat('%b %-d')(r.dt));
   const tip=d3.select(el).append('div').attr('class','tip').style('display','none');
@@ -315,21 +319,21 @@ function sortable(tbl,state,redraw){
   tbl.querySelectorAll('th').forEach((th,i)=>{if(th.querySelector('button'))return;const b=document.createElement('button');b.textContent=th.textContent;th.textContent='';th.append(b);
     b.addEventListener('click',()=>{state.k=th.dataset.field;state.dir=state.k===state.prev?-state.dir:-1;state.prev=state.k;redraw()})});
 }
-const BS={k:null,dir:-1},US={k:'amount_30_days',dir:-1,prev:'amount_30_days'};
+const BS={k:null,dir:-1},US={k:null,dir:-1,prev:null};
 
 function drawBranches(P){
   const t=document.getElementById('branches'),tb=t.tBodies[0];tb.innerHTML='';
   const d=dash.data('branches'),c=dash.data('bvs'),lt=dash.data('loctot');
   const pk=PK[P];
   t.querySelectorAll('th.bc').forEach(th=>th.dataset.field=pk+'_'+th.dataset.k);
-  const VK={'Yesterday':'vs_avg','Last working day':'vs_avg_pw','Last 7 days':'vs_avg_7','This FY':'vs_ly'}[P]||'vs_avg';const vth=t.querySelector('[data-field="vs_avg"],[data-field="vs_avg_7"],[data-field="vs_ly"]'); vth.dataset.field=VK;
+  const VK={'Yesterday':'vs_avg','Last working day':'vs_avg_pw','Last 7 days':'vs_avg_7','This FY':'vs_ly'}[P]||'vs_avg';const vth=t.querySelector('[data-field="vs_avg"],[data-field="vs_avg_7"],[data-field="vs_avg_pw"],[data-field="vs_ly"]'); vth.dataset.field=VK;
   sortable(t,BS,draw);
   (vth.querySelector('button')||vth).textContent=P==='This FY'?'vs same period last FY':(P==='Yesterday'||P==='Last 7 days'||P==='Last working day'?'vs 30-day avg':'—');
   if(d.status!=='ok'){failed(tb,d.status);return}
   const sel=document.getElementById('f-loc');if(sel.options.length===1)[...new Set(d.data.map(r=>r.location))].sort().forEach(l=>{const o=document.createElement('option');o.textContent=l;sel.append(o)});
   const cv={};(c.status==='ok'?c.data:[]).forEach(r=>cv[r.branch]=r);
   const fl=sel.value;
-  let k=BS.k||(pk+'_total'); if(/^[ywmfp]_/.test(k))k=pk+k.slice(k.indexOf('_'));
+  let k=BS.k||(pk+'_total'); if(/^(pw|[ywmfp])_/.test(k))k=pk+k.slice(k.indexOf('_'));
   const val=(r,k)=>/^vs_/.test(k)?(cv[r.branch]||{})[k]:r[k];
   const rows=d.data.filter(r=>!fl||r.location===fl).sort((a,b)=>{const x=val(a,k),y=val(b,k);return (isNaN(+x)?String(x).localeCompare(y):(+x)-(+y))*(BS.k?BS.dir:-1)});
   const mx=d3.max(rows,r=>+r[pk+'_total'])||1;
@@ -343,17 +347,26 @@ function drawBranches(P){
     const lim=P==='This FY'?0.1:0.5;const e=td(v==null?'—':(v>=0?'+':'')+PCT(v),'n'); if(v!=null)e.style.color=v<=-lim?'var(--color-bad)':(v>=lim?'var(--color-ok)':'');
     tb.append(tr)});
   const lb=document.getElementById('locs').tBodies[0];lb.innerHTML='';
+  const hasPW=!document.getElementById('pwbtn').hidden; document.getElementById('loc-pw').hidden=!hasPW;
+  const LC={'Yesterday':'yesterday','Last working day':'last_working_day','Last 7 days':'last_7_days','Past 30 days':'past_30_days','This FY':'this_fy','Last FY':'last_fy'}[P];
+  const lths=[...document.querySelectorAll('#locs thead th')].filter(th=>!th.hidden); const ci=lths.findIndex(th=>th.dataset.field===LC);
+  lths.forEach((th,i)=>th.classList.toggle('selcol',i===ci));
   if(lt.status==='ok')lt.data.forEach(r=>{const tr=document.createElement('tr');const td=(v,c)=>{const e=document.createElement('td');if(c)e.className=c;e.textContent=v;tr.append(e)};
-    td(r.location);td(INR(r.yesterday),'n');td(INR(r.last_7_days),'n');td(INR(r.past_30_days),'n');td(INR(r.this_fy),'n');td(INR(r.last_fy),'n');lb.append(tr)});
+    td(r.location);td(INR(r.yesterday),'n');if(hasPW)td(INR(r.last_working_day),'n');td(INR(r.last_7_days),'n');td(INR(r.past_30_days),'n');td(INR(r.this_fy),'n');td(INR(r.last_fy),'n');if(ci>0)tr.children[ci].classList.add('selcol');lb.append(tr)});
 }
 
-function drawUsers(){
-  const t=document.getElementById('users'),tb=t.tBodies[0];tb.innerHTML='';sortable(t,US,draw);
+function drawUsers(P){
+  const t=document.getElementById('users'),tb=t.tBodies[0];tb.innerHTML='';
+  const UP={'Yesterday':'y','Last working day':'pw','Last 7 days':'w','Past 30 days':'m'}; const uk=UP[P]||'m';
+  document.getElementById('unote-p').textContent=UP[P]?('Showing: '+P+' ('+(document.querySelector('.seg button[data-p="'+P+'"] small')||{}).textContent+').'):('User-wise detail is kept for the last 30 days only — showing Past 30 days.');
+  t.querySelectorAll('th.uc').forEach(th=>th.dataset.field='u_'+uk+'_'+th.dataset.k);
+  sortable(t,US,draw);
   const d=dash.data('users');if(d.status!=='ok'){failed(tb,d.status);return}
-  const k=US.k||'amount_30_days';
-  const rows=[...d.data].sort((a,b)=>(isNaN(+a[k])?String(a[k]).localeCompare(b[k]):(+a[k])-(+b[k]))*US.dir);
+  let k=US.k||('u_'+uk+'_amount'); if(/^u_(pw|[ywm])_/.test(k))k='u_'+uk+'_'+k.split('_').slice(2).join('_');
+  const rows=d.data.filter(r=>+r['u_'+uk+'_receipts']>0).sort((a,b)=>(isNaN(+a[k])?String(a[k]).localeCompare(b[k]):(+a[k])-(+b[k]))*US.dir);
+  if(!rows.length){const tr=document.createElement('tr');const e=document.createElement('td');e.colSpan=5;e.textContent='No entries in this period.';tr.append(e);tb.append(tr)}
   rows.forEach(r=>{const tr=document.createElement('tr');const td=(v,c)=>{const e=document.createElement('td');if(c)e.className=c;e.textContent=v;tr.append(e)};
-    td(r.user);td(NUM(r.receipts_yesterday),'n');td(NUM(r.receipts_7_days),'n');td(INR(r.amount_7_days),'n');td(NUM(r.receipts_30_days),'n');td(INR(r.amount_30_days),'n');td(INR(r.cash_30_days),'n');tb.append(tr)});
+    td(r.user);td(NUM(r['u_'+uk+'_receipts']),'n');td(INR(r['u_'+uk+'_amount']),'n');td(INR(r['u_'+uk+'_cash']),'n');td(INR(r['u_'+uk+'_online']),'n');tb.append(tr)});
 }
 
 dash.onData(draw);
