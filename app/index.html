@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SWES Dashboards</title>
+<meta name="theme-color" content="#14304f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SWES Dashboards">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+:root{--bg:#eef2f7;--card:#fff;--ink:#14304f;--mut:#5f6b7a;--line:#dde3ea}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;min-height:100vh}
+header{background:linear-gradient(135deg,#14304f,#1f4e78);color:#fff;padding:calc(18px + env(safe-area-inset-top)) 18px 22px}
+header h1{margin:0;font-size:20px} header p{margin:4px 0 0;opacity:.8;font-size:13px}
+main{padding:16px;max-width:720px;margin:0 auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+a.tile{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;background:var(--card);border-radius:18px;padding:20px 12px;text-decoration:none;color:var(--ink);box-shadow:0 2px 8px rgba(20,48,79,.08);border:1px solid var(--line);transition:transform .1s}
+a.tile:active{transform:scale(.96)}
+.ic{width:68px;height:68px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.nm{font-weight:700;font-size:16px}.ds{font-size:12px;color:var(--mut);line-height:1.3}
+.lock{max-width:340px;margin:40px auto;background:var(--card);border-radius:18px;padding:24px;text-align:center;box-shadow:0 2px 8px rgba(20,48,79,.08)}
+.lock input{width:100%;font-size:24px;letter-spacing:6px;text-align:center;padding:12px;border:1px solid var(--line);border-radius:10px;margin:14px 0 8px}
+button{background:#1f4e78;color:#fff;border:0;border-radius:10px;padding:12px 18px;font-size:15px;font-weight:600;width:100%}
+.err{color:#b3261e;font-size:13px;min-height:18px}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:22px;font-size:12px;color:var(--mut)}
+.foot a{color:var(--mut)} .hint{background:#fff8e1;border:1px solid #ffe082;border-radius:12px;padding:10px 12px;font-size:13px;margin-bottom:14px}
+.hide{display:none}
+</style></head>
+<body>
+<header><h1>St. Wilfred's – Dashboards</h1><p id="sub">Management view · tap a dashboard to open</p></header>
+<main>
+  <div id="lock" class="lock">
+    <div style="font-size:40px">🔒</div>
+    <b>Enter PIN</b>
+    <div style="font-size:13px;color:var(--mut);margin-top:4px">Asked only once on this phone.</div>
+    <input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" onkeydown="if(event.key==='Enter')unlock()">
+    <div class="err" id="err"></div>
+    <button onclick="unlock()">Open</button>
+  </div>
+  <div id="home" class="hide">
+    <div id="hint" class="hint hide">📲 Tip: add this to your home screen for one-tap access – <b id="hintTxt"></b></div>
+    <div class="grid" id="grid"></div>
+    <div class="foot"><span id="upd"></span><a href="#" onclick="lockNow();return false">🔒 Lock</a></div>
+  </div>
+</main>
+<script>
+/* Dashboards list is stored encrypted (AES-GCM, key from the PIN) so the private links are not visible without the PIN.
+   To add a dashboard: ask Claude to regenerate CFG with the new tile. */
+var CFG={"s":"JbKyWvadejP9/nGXOA57jA==","i":"v3x7HTRR7jB+y5rH","d":"bie02L28b1nUffjEMtGuIX7bE8F/kMI+Mv6dh/eMXN2u8GPpOZPak/cXBAXeSJTdHW4CP/xKWR08FbrGJqGnOtL+O4+HEwXJAFVJYS9gwGJCiP3k+Is/IBfK8K6Or3s0YRu/LxZp4aol/oYRVQItM5qwXRoxRuo+3MkDd4bqO6zLvvz+D2TKIWm30XOsIruXpfgHiJEgfUBBD02Vrk6iIt8giXKkzK0R9ucqkKsYFs9CjHLEJUhHDKm/NwTVaE53tQN938iAVmn/CEmmXBw4zOGJeCWS6bd4r11SiNIYDYoYFARSO2XjPhPEQNOOpX0qzewzHONQVfC7SGe3abfkSVUFJCf05dowZ/yGAbfU4FQMqQx+Qaa47oaAfSHRMtndI+dokyHtyf9eCVijEKAqY2pHGYVpWzaLZ+6J6/fy+YV3//d7hRmT8Y8GMQr2ZxYdHaTMRhl4mp2m/tbq4g1CAN2hqY3Ax9oGaAz2PrTsXr1Q8KOazQeKuePXE8glgTHW7Jx7pYPKV/IoC12QSZsi+m7KrNigV/m3nXAeCdzjU7kr23U3Pbw8BBOKosP3BCHZV6n0DdyZNkcS1BdVlHSaHkbxc8e7qnhu+xfQkO0+TNyvMpO6sGau/pKAT16kPhl8ZXJA4L39NdltDQRo42beTgufEB4C1vYAhtrxMFe95AbfCehl3jbjCdeMTtHuuPALUtN51Oee2O+vthVmTpEoNEgkb2Lo52WksUOJMHQxL54jOlZuvx68e4HlRnjWJ1XJzQF4qou+M/bTAQFW5i23NuwUWRhoMsqZkvzBj/dYj7cNwE4F2AFfrgPwGZ3B5j73DiTu4fuob+KI5mdmAahqmlow5HWlS6S+7NOURXMeW8muTpimM4y2YwrWW2l9nJGij0XeEDpr+g=="};
+function b64(s){return Uint8Array.from(atob(s),function(c){return c.charCodeAt(0)})}
+async function dec(pin){
+  var km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveKey']);
+  var k=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(CFG.s),iterations:150000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
+  var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(CFG.i)},k,b64(CFG.d));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+function get(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function put(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function show(tiles){
+  document.getElementById('lock').className='hide';document.getElementById('home').className='';
+  document.getElementById('grid').innerHTML=tiles.map(function(t){return '<a class="tile" href="'+esc(t.url)+'" target="_blank" rel="noopener"><div class="ic" style="background:'+esc(t.color)+'">'+t.icon+'</div><div class="nm">'+esc(t.name)+'</div><div class="ds">'+esc(t.desc||'')+'</div></a>'}).join('');
+  var d=new Date();document.getElementById('upd').textContent=d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  var standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  if(!standalone){var ios=/iphone|ipad/i.test(navigator.userAgent);document.getElementById('hintTxt').textContent=ios?'tap Share ⬆ then "Add to Home Screen".':'tap ⋮ menu then "Add to Home screen" / "Install app".';document.getElementById('hint').className='hint'}
+}
+async function unlock(){
+  var p=document.getElementById('pin').value.trim(),e=document.getElementById('err');
+  if(!p){e.textContent='Enter the PIN.';return}
+  try{var t=await dec(p);put('swes_pin',p);show(t)}catch(x){e.textContent='Wrong PIN.'}
+}
+function lockNow(){put('swes_pin',null);location.reload()}
+(async function(){var p=get('swes_pin');if(p){try{show(await dec(p));return}catch(e){put('swes_pin',null)}}})();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
+</script>
+</body></html>
