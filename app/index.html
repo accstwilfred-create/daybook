@@ -29,6 +29,27 @@ button{background:#1f4e78;color:#fff;border:0;border-radius:10px;padding:12px 18
 .err{color:#b3261e;font-size:13px;min-height:18px}
 .foot{display:flex;justify-content:space-between;align-items:center;margin-top:22px;font-size:12px;color:var(--mut)}
 .foot a{color:var(--mut)} .hint{background:#fff8e1;border:1px solid #ffe082;border-radius:12px;padding:10px 12px;font-size:13px;margin-bottom:14px}
+.view{max-width:720px;margin:0 auto;padding:12px 14px 30px}
+.vbar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.vbar .bk{width:auto;padding:8px 12px;background:#fff;color:var(--ink);border:1px solid var(--line);font-size:14px}
+.vbar h2{flex:1;margin:0;font-size:18px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.chip{width:auto;padding:7px 12px;border-radius:20px;background:#fff;color:var(--ink);border:1px solid var(--line);font-size:13px;font-weight:600}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+select.f,input.f{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:14px;background:#fff;margin-bottom:10px}
+.kp{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.k{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px}
+.k b{display:block;font-size:22px}.k span{font-size:12px;color:var(--mut)}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+.card h3{margin:0 0 8px;font-size:15px}
+.row{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:7px 0;border-top:1px solid #eef1f5}
+.row:first-of-type{border-top:0}
+.row .l{flex:1;min-width:0}.row .r{text-align:right;white-space:nowrap}
+.bar{height:6px;background:#eef2f7;border-radius:3px;margin-top:4px;overflow:hidden}.bar i{display:block;height:100%;background:#2a78d6}
+.sm{font-size:12px;color:var(--mut)}
+.pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700}
+.pill.w{background:#fff3cd;color:#8a6d00}.pill.d{background:#d6f5df;color:#1e7b45}.pill.o{background:#7b1fa2;color:#fff}
+.load{text-align:center;padding:40px 10px;color:var(--mut)}
 .hide{display:none}
 </style></head>
 <body>
@@ -42,6 +63,7 @@ button{background:#1f4e78;color:#fff;border:0;border-radius:10px;padding:12px 18
     <div class="err" id="err"></div>
     <button onclick="unlock()">Open</button>
   </div>
+  <div id="view" class="hide"></div>
   <div id="home" class="hide">
     <div id="hint" class="hint hide">📲 Tip: add this to your home screen for one-tap access – <b id="hintTxt"></b></div>
     <div class="grid" id="grid"></div>
@@ -51,7 +73,7 @@ button{background:#1f4e78;color:#fff;border:0;border-radius:10px;padding:12px 18
 <script>
 /* Dashboards list is stored encrypted (AES-GCM, key from the PIN) so the private links are not visible without the PIN.
    To add a dashboard: ask Claude to regenerate CFG with the new tile. */
-var CFG={"s":"JbKyWvadejP9/nGXOA57jA==","i":"v3x7HTRR7jB+y5rH","d":"bie02L28b1nUffjEMtGuIX7bE8F/kMI+Mv6dh/eMXN2u8GPpOZPak/cXBAXeSJTdHW4CP/xKWR08FbrGJqGnOtL+O4+HEwXJAFVJYS9gwGJCiP3k+Is/IBfK8K6Or3s0YRu/LxZp4aol/oYRVQItM5qwXRoxRuo+3MkDd4bqO6zLvvz+D2TKIWm30XOsIruXpfgHiJEgfUBBD02Vrk6iIt8giXKkzK0R9ucqkKsYFs9CjHLEJUhHDKm/NwTVaE53tQN938iAVmn/CEmmXBw4zOGJeCWS6bd4r11SiNIYDYoYFARSO2XjPhPEQNOOpX0qzewzHONQVfC7SGe3abfkSVUFJCf05dowZ/yGAbfU4FQMqQx+Qaa47oaAfSHRMtndI+dokyHtyf9eCVijEKAqY2pHGYVpWzaLZ+6J6/fy+YV3//d7hRmT8Y8GMQr2ZxYdHaTMRhl4mp2m/tbq4g1CAN2hqY3Ax9oGaAz2PrTsXr1Q8KOazQeKuePXE8glgTHW7Jx7pYPKV/IoC12QSZsi+m7KrNigV/m3nXAeCdzjU7kr23U3Pbw8BBOKosP3BCHZV6n0DdyZNkcS1BdVlHSaHkbxc8e7qnhu+xfQkO0+TNyvMpO6sGau/pKAT16kPhl8ZXJA4L39NdltDQRo42beTgufEB4C1vYAhtrxMFe95AbfCehl3jbjCdeMTtHuuPALUtN51Oee2O+vthVmTpEoNEgkb2Lo52WksUOJMHQxL54jOlZuvx68e4HlRnjWJ1XJzQF4qou+M/bTAQFW5i23NuwUWRhoMsqZkvzBj/dYj7cNwE4F2AFfrgPwGZ3B5j73DiTu4fuob+KI5mdmAahqmlow5HWlS6S+7NOURXMeW8muTpimM4y2YwrWW2l9nJGij0XeEDpr+g=="};
+var CFG={"s":"cc8dBpOxUjo12bHRbiRT7w==","i":"KAAhIH32f5k+aHOy","d":"xHCXhYjYpQxSYGhJ5lhVsUgJP0EmJolWqnXtsuF4DRPSrHlkwKTk6n+Sjikm6FOM/GTYUToNkM1Vjoa8GctOJEUGy0bB0Me8YEWeUx95kulRH62MfAUZeSCf0qbF8oWN1iqsBcFCUOiRAOXcTFeuL5Q22zAV+PwXLahhpaZUyYfP3HXiFCaD3tky5R/m5jXYowANmHGQoosclG6e8rySCXItJRbOrE8JDdOmjbpc3xgVTKm1zZ4JqupGOT0Rrf0Xj9FHhmLBDdX3cOZN8uOKK8FMUn2YgUvQxCHbErsnFAce/sEojCOXw1DLr0KR5wuD+wbyn6Xq5Gj/THjFzZPs06hMGh/CGxFdccS2GklP2mtBqaVCrG0ZF7uxTUOO1UCcZLz7i33SGRyFJXytk8FQkFkOWdq6f5wztb8rvktLjzVi5OkyRhg5hwtzuwvsUjm+CXd7SJ3rL8LOAEugVS8wddbUcqJSzUjHhROYmyZQhJTfAtmbxAeWWbFe1pUdCZ6uL6OIHr0njMS3h9nJgSYPYXbSwkD8BO8dRQo6qv2EHcSL7E/l9fWaqpaO0T24fCt+dLCxCoZTPTrz2u96PJuQcPjoHq063qquGs/rpu2PnjLtOOxgBHO9ip9jwF5zAQnjcZ2kItJd1+IuAuMOERyM5NySwBO1wHKKapw3dom/EOHE4DX4/W2JS/j9TzfZ1CGCtClhweDchYoWmLwdZakBToHUiNgejWXUfC+tcIbOCdj0YKhlrJRdY2kdpQSz+kbRiCq7F2ww4Xy4p79vTHitTEfjas+jamE+O7kz8SnZmSRhalYDyx0V88bKLHPLFSKPy64I2WIqO/OF1GBwPA5SKeoO0k9CNDYJGeWTcUa3zsKHAkTpt4Ywbh4CgfSrsLAVRD9v5MxFFP3B5Nju7bn63EZQQMcR1rQkoqKAb27QdQH5kmlkBA=="};
 function b64(s){return Uint8Array.from(atob(s),function(c){return c.charCodeAt(0)})}
 async function dec(pin){
   var km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveKey']);
@@ -64,9 +86,11 @@ function put(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function show(tiles){
   document.getElementById('lock').className='hide';document.getElementById('home').className='';
-  document.getElementById('grid').innerHTML=tiles.map(function(t){return '<a class="tile" href="'+esc(t.url)+'" target="_blank" rel="noopener"><div class="ic" style="background:'+esc(t.color)+'">'+t.icon+'</div><div class="nm">'+esc(t.name)+'</div><div class="ds">'+esc(t.desc||'')+'</div></a>'}).join('');
+  TILES=tiles;
+  document.getElementById('grid').innerHTML=tiles.map(function(t,i){return '<a class="tile" '+(t.view?'href="#'+esc(t.view)+'"':'href="'+esc(t.url)+'" target="_blank" rel="noopener"')+'><div class="ic" style="background:'+esc(t.color)+'">'+t.icon+'</div><div class="nm">'+esc(t.name)+'</div><div class="ds">'+esc(t.desc||'')+'</div></a>'}).join('');
   var d=new Date();document.getElementById('upd').textContent=d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
   var standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  renderView();
   if(!standalone){var ios=/iphone|ipad/i.test(navigator.userAgent);document.getElementById('hintTxt').textContent=ios?'tap Share ⬆ then "Add to Home Screen".':'tap ⋮ menu then "Add to Home screen" / "Install app".';document.getElementById('hint').className='hint'}
 }
 async function unlock(){
@@ -74,6 +98,63 @@ async function unlock(){
   if(!p){e.textContent='Enter the PIN.';return}
   try{var t=await dec(p);put('swes_pin',p);show(t)}catch(x){e.textContent='Wrong PIN.'}
 }
+
+var TILES=[],DATA=null,VS={per:'7',inst:'',q:'',st:''};
+function inr(n){return '₹'+Math.round(n||0).toLocaleString('en-IN')}
+function iso(d){return new Date(d.getTime()+19800000).toISOString().slice(0,10)}
+function showHome(){document.getElementById('view').className='hide';document.getElementById('home').className='';document.querySelector('header').className=''}
+function openView(i){var t=TILES[i];location.hash=t.view;renderView()}
+window.addEventListener('hashchange',function(){renderView()});
+function renderView(){var v=(location.hash||'').slice(1),t=TILES.filter(function(x){return x.view===v})[0];
+  if(!t){showHome();return}
+  document.getElementById('home').className='hide';document.querySelector('header').className='hide';var el=document.getElementById('view');el.className='view';
+  if(!DATA){el.innerHTML=bar(t)+'<div class="load">⏳ Loading the latest figures…<br><span class="sm">This takes about 5–10 seconds</span></div>';load(t);return}
+  el.innerHTML=bar(t)+(v==='calls'?calls():apps())}
+function bar(t){return '<div class="vbar"><button class="bk" onclick="location.hash=\'\'">← Back</button><h2>'+t.icon+' '+esc(t.name)+'</h2><button class="bk" onclick="DATA=null;renderView()">↻</button></div>'+(DATA?'<div class="sm" style="margin:-4px 0 8px">Updated '+esc(DATA.asOn)+' · view only</div>':'')}
+function load(t){var api=TILES.filter(function(x){return x.api})[0].api;
+  fetch(api,{credentials:'omit'}).then(function(r){return r.json()}).then(function(d){if(d.error)throw new Error(d.error);DATA=d;renderView()})
+  .catch(function(e){document.getElementById('view').innerHTML=bar(t)+'<div class="load">Could not load the figures – check the internet and tap ↻.<br><span class="sm">'+esc(e.message||e)+'</span></div>'})}
+function set(k,v){VS[k]=v;renderView()}
+function chips(k,opts){return '<div class="chips">'+opts.map(function(o){return '<button class="chip'+(VS[k]===o[0]?' on':'')+'" onclick="set(\''+k+'\',\''+o[0]+'\')">'+o[1]+'</button>'}).join('')+'</div>'}
+function instSel(list){return '<select class="f" onchange="set(\'inst\',this.value)"><option value="">All institutes</option>'+list.map(function(x){return '<option'+(VS.inst===x?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select>'}
+function since(){var d=DATA.today;if(VS.per==='all')return '';if(VS.per==='1')return d;var n=Number(VS.per),t=new Date(d+'T00:00:00Z');t.setUTCDate(t.getUTCDate()-(n-1));return t.toISOString().slice(0,10)}
+function rows(list,fn){return list.length?list.map(fn).join(''):'<div class="sm">Nothing in this period.</div>'}
+function calls(){var D=DATA,s=since(),I=VS.inst;
+  var C=D.calls.filter(function(c){return (!s||c[0]>=s)&&(!I||c[1]===I)}),P=D.pay.filter(function(p){return (!s||p[0]>=s)&&(!I||p[1]===I)});
+  var pk=C.filter(function(c){return c[3]}).length,st={};C.forEach(function(c){st[c[1]+'|'+c[4]]=1});
+  var paid=P.reduce(function(a,p){return a+p[3]},0),red=C.filter(function(c){return c[5]}).length;
+  var by={};C.forEach(function(c){var o=by[c[2]]||(by[c[2]]={n:0,p:0,amt:0,paid:0});o.n++;if(c[3])o.p++});
+  P.forEach(function(p){var o=by[p[4]]||(by[p[4]]={n:0,p:0,amt:0,paid:0});o.amt+=p[3];o.paid++});
+  var bi={};C.forEach(function(c){var o=bi[c[1]]||(bi[c[1]]={n:0,st:{},amt:0});o.n++;o.st[c[4]]=1});P.forEach(function(p){var o=bi[p[1]]||(bi[p[1]]={n:0,st:{},amt:0});o.amt+=p[3]});
+  var insts={};D.calls.forEach(function(c){insts[c[1]]=1});Object.keys(D.due).forEach(function(k){insts[k]=1});
+  var mx=Math.max.apply(null,Object.keys(by).map(function(k){return by[k].n}).concat([1]));
+  var h=chips('per',[['1','Today'],['7','7 days'],['30','30 days'],['all','All']])+instSel(Object.keys(insts).sort())+
+  '<div class="kp"><div class="k"><b>'+C.length+'</b><span>Calls made</span></div><div class="k"><b>'+(C.length?Math.round(pk*100/C.length):0)+'%</b><span>Picked up ('+pk+')</span></div>'+
+  '<div class="k"><b>'+Object.keys(st).length+'</b><span>Students called</span></div><div class="k"><b>'+inr(paid)+'</b><span>Paid after call ('+P.length+' parents)</span></div>'+
+  (red?'<div class="k"><b>'+red+'</b><span>🚩 Red flags</span></div>':'')+'</div>';
+  if(D.coins&&D.coins.people){h+='<div class="card"><h3>🪙 Coins (1 coin per '+inr(D.coins.per)+' collected)</h3>'+Object.keys(D.coins.people).map(function(n){var p=D.coins.people[n],nx=D.coins.rewards.filter(function(r){return r.c>p.coins})[0];
+    return '<div class="row"><div class="l"><b>'+esc(n)+'</b><div class="sm">'+inr(p.amt)+' from '+p.paid+' parents'+(nx?' · next: '+nx.r+' at '+nx.c:'')+'</div><div class="bar"><i style="width:'+(nx?Math.min(100,p.coins*100/nx.c):100)+'%;background:#ffb300"></i></div></div><div class="r"><b>'+p.coins+'</b> coins</div></div>'}).join('')+'</div>'}
+  h+='<div class="card"><h3>By caller</h3>'+rows(Object.keys(by).sort(function(a,b){return by[b].n-by[a].n}),function(k){var o=by[k];
+    return '<div class="row"><div class="l"><b>'+esc(k||'–')+'</b><div class="sm">'+o.n+' calls · '+(o.n?Math.round(o.p*100/o.n):0)+'% picked up</div><div class="bar"><i style="width:'+(o.n*100/mx)+'%"></i></div></div><div class="r">'+(o.amt?inr(o.amt)+'<div class="sm">'+o.paid+' paid</div>':'<span class="sm">–</span>')+'</div></div>'})+'</div>';
+  h+='<div class="card"><h3>By institute</h3>'+rows(Object.keys(bi).sort(function(a,b){return bi[b].n-bi[a].n}),function(k){var o=bi[k],d=D.due[k],ns=Object.keys(o.st).length;
+    return '<div class="row"><div class="l"><b>'+esc(k)+'</b><div class="sm">'+o.n+' calls · '+ns+' students'+(d?' of '+d.n+' with dues ('+Math.round(ns*100/Math.max(d.n,1))+'%)':'')+'</div>'+(d?'<div class="bar"><i style="width:'+Math.min(100,ns*100/Math.max(d.n,1))+'%;background:#2e7d32"></i></div>':'')+'</div><div class="r">'+(o.amt?inr(o.amt):'<span class="sm">–</span>')+'</div></div>'})+'</div>';
+  h+='<div class="card"><h3>Latest payments after calls</h3>'+rows(P.slice().sort(function(a,b){return a[0]<b[0]?1:-1}).slice(0,15),function(p){
+    return '<div class="row"><div class="l"><b>'+esc(p[2])+'</b><div class="sm">'+esc(p[1])+' · '+p[0].split('-').reverse().join('-')+' · called by '+esc(p[4]||'–')+'</div></div><div class="r"><b>'+inr(p[3])+'</b></div></div>'})+'</div>';
+  return h}
+function apps(){var D=DATA,I=VS.inst,q=VS.q.toLowerCase(),g={},order=[];
+  D.apps.forEach(function(a){var o=g[a[0]];if(!o){o=g[a[0]]={id:a[0],on:a[1],inst:a[2],type:a[4],done:a[5],rem:a[6],by:a[7],sig:a[8],sub:a[9],names:[],due:0};order.push(a[0])}o.names.push(a[3]);o.due+=Number(String(a[10]).replace(/[^0-9.-]/g,''))||0});
+  var all=order.map(function(k){return g[k]}),L=all.filter(function(o){return (!I||o.inst===I)&&(!VS.st||(VS.st==='d')===!!o.done)&&(!q||(o.id+' '+o.names.join(' ')+' '+o.inst).toLowerCase().indexOf(q)>=0)});
+  var base=all.filter(function(o){return !I||o.inst===I}),w=base.filter(function(o){return !o.done}).length,st=base.reduce(function(a,o){return a+o.names.length},0),os=base.filter(function(o){return o.sig}).length;
+  var ty={};base.forEach(function(o){String(o.type).split(' + ').forEach(function(t){ty[t]=(ty[t]||0)+1})});var tm=Math.max.apply(null,Object.keys(ty).map(function(k){return ty[k]}).concat([1]));
+  var insts={};all.forEach(function(o){insts[o.inst]=1});
+  var h=instSel(Object.keys(insts).sort())+'<div class="kp"><div class="k"><b>'+base.length+'</b><span>Applications ('+st+' students)</span></div><div class="k"><b>'+w+'</b><span>Awaiting Fee Dept remarks</span></div>'+
+    '<div class="k"><b>'+(base.length-w)+'</b><span>Remarks given</span></div><div class="k"><b>'+os+'</b><span>Signed by other than Principal</span></div></div>';
+  h+='<div class="card"><h3>By type</h3>'+rows(Object.keys(ty).sort(function(a,b){return ty[b]-ty[a]}),function(k){return '<div class="row"><div class="l">'+esc(k.replace(/^Request for /,''))+'<div class="bar"><i style="width:'+(ty[k]*100/tm)+'%;background:#6a1b9a"></i></div></div><div class="r"><b>'+ty[k]+'</b></div></div>'})+'</div>';
+  h+=chips('st',[['','All'],['w','Awaiting'],['d','Remarks given']])+'<input class="f" placeholder="Search student, application no, institute" value="'+esc(VS.q)+'" onchange="set(\'q\',this.value)">';
+  h+='<div class="card"><h3>Applications ('+L.length+')</h3>'+rows(L.slice(0,80),function(o){
+    return '<div class="row"><div class="l"><b>'+esc(o.names.slice(0,2).join(', '))+(o.names.length>2?' +'+(o.names.length-2)+' more':'')+'</b><div class="sm">'+esc(o.inst)+'<br>'+esc(o.type.replace(/Request for /g,''))+' · '+esc(o.id)+' · '+esc(o.on.split(' ')[0])+(o.sub?' · by '+esc(o.sub):'')+'</div>'+
+      (o.sig?'<span class="pill o">✍ '+esc(o.sig)+'</span> ':'')+(o.done?'<div class="sm" style="margin-top:3px"><b>Fee Dept:</b> '+esc(o.rem)+(o.by?' – '+esc(o.by):'')+'</div>':'')+'</div><div class="r">'+(o.done?'<span class="pill d">Done</span>':'<span class="pill w">Awaiting</span>')+(o.due?'<div class="sm">Due '+inr(o.due)+'</div>':'')+'</div></div>'})+(L.length>80?'<div class="sm">Showing first 80 – use search to narrow.</div>':'')+'</div>';
+  return h}
 function lockNow(){put('swes_pin',null);location.reload()}
 (async function(){var p=get('swes_pin');if(p){try{show(await dec(p));return}catch(e){put('swes_pin',null)}}})();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
