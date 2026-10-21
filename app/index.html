@@ -50,6 +50,13 @@ select.f,input.f{width:100%;padding:10px;border:1px solid var(--line);border-rad
 .pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700}
 .pill.w{background:#fff3cd;color:#8a6d00}.pill.d{background:#d6f5df;color:#1e7b45}.pill.o{background:#7b1fa2;color:#fff}
 .load{text-align:center;padding:40px 10px;color:var(--mut)}
+.fv{position:fixed;inset:0;z-index:50;background:#3a3d42;display:flex;flex-direction:column}
+.fv .fb{display:flex;gap:8px;align-items:center;padding:10px;background:#14304f;color:#fff}
+.fv .fb b{flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fv .fb a,.fv .fb button{width:auto;padding:7px 12px;font-size:13px;background:#fff;color:#14304f;border-radius:8px;text-decoration:none;font-weight:600}
+.fv .bd{flex:1;overflow:auto;padding:10px;text-align:center;color:#fff}
+.fv img,.fv canvas{max-width:100%;display:block;margin:0 auto 10px;background:#fff}
+.vb{width:auto;padding:5px 10px;font-size:12px;margin:4px 4px 0 0;background:#eef2f7;color:#14304f;border:1px solid var(--line)}
 .hide{display:none}
 </style></head>
 <body>
@@ -99,7 +106,7 @@ async function unlock(){
   try{var t=await dec(p);put('swes_pin',p);show(t)}catch(x){e.textContent='Wrong PIN.'}
 }
 
-var TILES=[],DATA=null,VS={per:'7',inst:'',q:'',st:''};
+var TILES=[],DATA=null,VS={per:'7',inst:'',q:'',st:'',cq:''};
 function inr(n){return '₹'+Math.round(n||0).toLocaleString('en-IN')}
 function iso(d){return new Date(d.getTime()+19800000).toISOString().slice(0,10)}
 function showHome(){document.getElementById('view').className='hide';document.getElementById('home').className='';document.querySelector('header').className=''}
@@ -138,11 +145,17 @@ function calls(){var D=DATA,s=since(),I=VS.inst;
     return '<div class="row"><div class="l"><b>'+esc(k||'–')+'</b><div class="sm">'+o.n+' calls · '+(o.n?Math.round(o.p*100/o.n):0)+'% picked up</div><div class="bar"><i style="width:'+(o.n*100/mx)+'%"></i></div></div><div class="r">'+(o.amt?inr(o.amt)+'<div class="sm">'+o.paid+' paid</div>':'<span class="sm">–</span>')+'</div></div>'})+'</div>';
   h+='<div class="card"><h3>By institute</h3>'+rows(Object.keys(bi).sort(function(a,b){return bi[b].n-bi[a].n}),function(k){var o=bi[k],d=D.due[k],ns=Object.keys(o.st).length;
     return '<div class="row"><div class="l"><b>'+esc(k)+'</b><div class="sm">'+o.n+' calls · '+ns+' students'+(d?' of '+d.n+' with dues ('+Math.round(ns*100/Math.max(d.n,1))+'%)':'')+'</div>'+(d?'<div class="bar"><i style="width:'+Math.min(100,ns*100/Math.max(d.n,1))+'%;background:#2e7d32"></i></div>':'')+'</div><div class="r">'+(o.amt?inr(o.amt):'<span class="sm">–</span>')+'</div></div>'})+'</div>';
+  var cq=VS.cq.toLowerCase(),CL=C.filter(function(c){return !cq||(c[6]+' '+c[4]+' '+c[1]+' '+c[2]+' '+c[8]).toLowerCase().indexOf(cq)>=0}).sort(function(a,b){return (a[0]+(a[10]||''))<(b[0]+(b[10]||''))?1:-1});
+  h+='<div class="card"><h3>Call details ('+CL.length+')</h3><input class="f" placeholder="Search student, SR, caller, remark" value="'+esc(VS.cq)+'" onchange="set(\'cq\',this.value)">'+rows(CL.slice(0,150),function(c){
+    return '<div class="row"><div class="l"><b>'+esc(c[6]||'–')+'</b> <span class="sm">SR '+esc(c[4])+'</span><div class="sm">'+esc(c[1])+'</div>'+
+      '<div class="sm">'+c[0].split('-').reverse().join('-')+(c[10]?' '+esc(c[10]):'')+' · '+esc(c[2])+(c[11]?' · '+esc(c[11]):'')+'</div>'+
+      (c[8]?'<div style="font-size:12px;margin-top:2px">💬 '+esc(c[8])+'</div>':'')+(c[9]?'<div class="sm">Expected payment: <b style="color:#b26a00">'+c[9].split('-').reverse().join('-')+'</b>'+(c[12]?' · ₹'+esc(c[12]):'')+'</div>':'')+
+      (c[5]?'<div class="sm" style="color:#b3261e">🚩 '+esc(c[13]||'Red flag')+'</div>':'')+'</div><div class="r"><span class="pill '+(c[3]?'d':'w')+'">'+esc(c[7]||'')+'</span></div></div>'})+(CL.length>150?'<div class="sm">Showing latest 150 – use search to narrow.</div>':'')+'</div>';
   h+='<div class="card"><h3>Latest payments after calls</h3>'+rows(P.slice().sort(function(a,b){return a[0]<b[0]?1:-1}).slice(0,15),function(p){
     return '<div class="row"><div class="l"><b>'+esc(p[2])+'</b><div class="sm">'+esc(p[1])+' · '+p[0].split('-').reverse().join('-')+' · called by '+esc(p[4]||'–')+'</div></div><div class="r"><b>'+inr(p[3])+'</b></div></div>'})+'</div>';
   return h}
 function apps(){var D=DATA,I=VS.inst,q=VS.q.toLowerCase(),g={},order=[];
-  D.apps.forEach(function(a){var o=g[a[0]];if(!o){o=g[a[0]]={id:a[0],on:a[1],inst:a[2],type:a[4],done:a[5],rem:a[6],by:a[7],sig:a[8],sub:a[9],names:[],due:0};order.push(a[0])}o.names.push(a[3]);o.due+=Number(String(a[10]).replace(/[^0-9.-]/g,''))||0});
+  D.apps.forEach(function(a){var o=g[a[0]];if(!o){o=g[a[0]]={id:a[0],on:a[1],inst:a[2],type:a[4],done:a[5],rem:a[6],by:a[7],sig:a[8],sub:a[9],names:[],due:0,files:a[12]||[],det:a[13]||'',why:a[14]||'',ir:a[15]||'',sd:a[16]||''};order.push(a[0])}o.names.push(a[3]+(a[11]?' (SR '+a[11]+')':''));o.due+=Number(String(a[10]).replace(/[^0-9.-]/g,''))||0});
   var all=order.map(function(k){return g[k]}),L=all.filter(function(o){return (!I||o.inst===I)&&(!VS.st||(VS.st==='d')===!!o.done)&&(!q||(o.id+' '+o.names.join(' ')+' '+o.inst).toLowerCase().indexOf(q)>=0)});
   var base=all.filter(function(o){return !I||o.inst===I}),w=base.filter(function(o){return !o.done}).length,st=base.reduce(function(a,o){return a+o.names.length},0),os=base.filter(function(o){return o.sig}).length;
   var ty={};base.forEach(function(o){String(o.type).split(' + ').forEach(function(t){ty[t]=(ty[t]||0)+1})});var tm=Math.max.apply(null,Object.keys(ty).map(function(k){return ty[k]}).concat([1]));
@@ -152,9 +165,26 @@ function apps(){var D=DATA,I=VS.inst,q=VS.q.toLowerCase(),g={},order=[];
   h+='<div class="card"><h3>By type</h3>'+rows(Object.keys(ty).sort(function(a,b){return ty[b]-ty[a]}),function(k){return '<div class="row"><div class="l">'+esc(k.replace(/^Request for /,''))+'<div class="bar"><i style="width:'+(ty[k]*100/tm)+'%;background:#6a1b9a"></i></div></div><div class="r"><b>'+ty[k]+'</b></div></div>'})+'</div>';
   h+=chips('st',[['','All'],['w','Awaiting'],['d','Remarks given']])+'<input class="f" placeholder="Search student, application no, institute" value="'+esc(VS.q)+'" onchange="set(\'q\',this.value)">';
   h+='<div class="card"><h3>Applications ('+L.length+')</h3>'+rows(L.slice(0,80),function(o){
-    return '<div class="row"><div class="l"><b>'+esc(o.names.slice(0,2).join(', '))+(o.names.length>2?' +'+(o.names.length-2)+' more':'')+'</b><div class="sm">'+esc(o.inst)+'<br>'+esc(o.type.replace(/Request for /g,''))+' · '+esc(o.id)+' · '+esc(o.on.split(' ')[0])+(o.sub?' · by '+esc(o.sub):'')+'</div>'+
+    return '<div class="row"><div class="l"><b>'+esc(o.names.slice(0,2).join(', '))+(o.names.length>2?' +'+(o.names.length-2)+' more':'')+'</b><div class="sm">'+esc(o.inst)+'<br>'+esc(o.type.replace(/Request for /g,''))+' · '+esc(o.id)+' · '+esc(o.on.split(' ')[0])+(o.sub?' · by '+esc(o.sub)+(o.sd?' ('+esc(o.sd)+')':''):'')+'</div>'+
+      (o.det?'<div style="font-size:12px;margin-top:2px"><b>Details:</b> '+esc(o.det)+'</div>':'')+(o.why?'<div style="font-size:12px"><b>Reason:</b> '+esc(o.why)+'</div>':'')+(o.ir?'<div style="font-size:12px;background:#fff8e1;padding:2px 5px;margin-top:2px"><b>Institute:</b> '+esc(o.ir)+'</div>':'')+
+      o.files.map(function(f,i){return '<button class="vb" onclick="openFile(\''+esc(f)+'\')">📄 View application'+(o.files.length>1?' '+(i+1):'')+'</button>'}).join('')+
       (o.sig?'<span class="pill o">✍ '+esc(o.sig)+'</span> ':'')+(o.done?'<div class="sm" style="margin-top:3px"><b>Fee Dept:</b> '+esc(o.rem)+(o.by?' – '+esc(o.by):'')+'</div>':'')+'</div><div class="r">'+(o.done?'<span class="pill d">Done</span>':'<span class="pill w">Awaiting</span>')+(o.due?'<div class="sm">Due '+inr(o.due)+'</div>':'')+'</div></div>'})+(L.length>80?'<div class="sm">Showing first 80 – use search to narrow.</div>':'')+'</div>';
   return h}
+function openFile(id){var api=TILES.filter(function(x){return x.api})[0].api.replace('api=mgmt&','api=mgmtfile&')+'&id='+encodeURIComponent(id);
+  var fv=document.createElement('div');fv.className='fv';fv.innerHTML='<div class="fb"><b>Loading application…</b><a class="dl hide">Download</a><button onclick="this.closest(\'.fv\').remove()">Close ✕</button></div><div class="bd">⏳ Opening the application…</div>';document.body.appendChild(fv);
+  var bd=fv.querySelector('.bd');
+  fetch(api,{credentials:'omit'}).then(function(r){return r.json()}).then(function(f){if(f.error)throw new Error(f.error);
+    var bin=atob(f.data),u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+    var url=URL.createObjectURL(new Blob([u],{type:f.mime}));fv.querySelector('b').textContent=f.name;var dl=fv.querySelector('.dl');dl.href=url;dl.download=f.name;dl.className='dl';
+    if(/^image\//.test(f.mime)){bd.innerHTML='<img src="'+url+'">';return}
+    if(f.mime!=='application/pdf'){bd.innerHTML='Preview not available – tap Download.';return}
+    pdfLib().then(function(L){return L.getDocument({data:u}).promise}).then(function(pdf){bd.innerHTML='';var w=bd.clientWidth-20,dpr=window.devicePixelRatio||1;
+      for(var n=1;n<=pdf.numPages;n++)(function(n){var c=document.createElement('canvas');bd.appendChild(c);
+        pdf.getPage(n).then(function(pg){var s=w/pg.getViewport({scale:1}).width,vp=pg.getViewport({scale:s*dpr});c.width=vp.width;c.height=vp.height;c.style.width=(vp.width/dpr)+'px';pg.render({canvasContext:c.getContext('2d'),viewport:vp})})})(n)})
+    .catch(function(){bd.innerHTML='Could not show the PDF here – tap Download to open it.'})})
+  .catch(function(e){bd.innerHTML='Could not open the application – check the internet and try again.<br><span class="sm">'+esc(e.message||e)+'</span>'})}
+function pdfLib(){if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);return new Promise(function(res,rej){var sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+  sc.onload=function(){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';res(pdfjsLib)};sc.onerror=rej;document.head.appendChild(sc)})}
 function lockNow(){put('swes_pin',null);location.reload()}
 (async function(){var p=get('swes_pin');if(p){try{show(await dec(p));return}catch(e){put('swes_pin',null)}}})();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
