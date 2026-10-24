@@ -171,6 +171,8 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(-
           <th class="n uc" data-k="amount" data-field="u_y_amount">Amount</th>
           <th class="n uc" data-k="cash" data-field="u_y_cash">Cash</th>
           <th class="n uc" data-k="online" data-field="u_y_online">Online</th>
+          <th class="n uc" data-k="scholarship" data-field="u_y_scholarship">Scholarship</th>
+          <th class="n uc" data-k="grayquest" data-field="u_y_grayquest">Gray Quest</th>
         </tr></thead><tbody></tbody>
       </table>
     </div>
@@ -364,9 +366,9 @@ function drawUsers(P){
   const d=dash.data('users');if(d.status!=='ok'){failed(tb,d.status);return}
   let k=US.k||('u_'+uk+'_amount'); if(/^u_(pw|[ywm])_/.test(k))k='u_'+uk+'_'+k.split('_').slice(2).join('_');
   const rows=d.data.filter(r=>+r['u_'+uk+'_receipts']>0).sort((a,b)=>(isNaN(+a[k])?String(a[k]).localeCompare(b[k]):(+a[k])-(+b[k]))*US.dir);
-  if(!rows.length){const tr=document.createElement('tr');const e=document.createElement('td');e.colSpan=5;e.textContent='No entries in this period.';tr.append(e);tb.append(tr)}
+  if(!rows.length){const tr=document.createElement('tr');const e=document.createElement('td');e.colSpan=7;e.textContent='No entries in this period.';tr.append(e);tb.append(tr)}
   rows.forEach(r=>{const tr=document.createElement('tr');const td=(v,c)=>{const e=document.createElement('td');if(c)e.className=c;e.textContent=v;tr.append(e)};
-    td(r.user);td(NUM(r['u_'+uk+'_receipts']),'n');td(INR(r['u_'+uk+'_amount']),'n');td(INR(r['u_'+uk+'_cash']),'n');td(INR(r['u_'+uk+'_online']),'n');tb.append(tr)});
+    td(r.user);td(NUM(r['u_'+uk+'_receipts']),'n');td(INR(r['u_'+uk+'_amount']),'n');td(INR(r['u_'+uk+'_cash']),'n');td(INR(r['u_'+uk+'_online']),'n');td(INR(r['u_'+uk+'_scholarship']||0),'n');td(INR(r['u_'+uk+'_grayquest']||0),'n');tb.append(tr)});
 }
 
 dash.onData(draw);
